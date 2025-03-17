@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<h2>Register</h2>
+<form method="post">
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br>
+
+    <label>Email:</label><br>
+    <input type="email" name="email" required><br>
+
+    <label>Password:</label><br>
+    <input type="password" name="password" required><br>
+
+    <label>Role:</label><br>
+    <select name="role">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+    </select><br>
+
+    <!-- Additional fields for teacher registration -->
+    <div id="teacher_fields" style="display:none;">
+        <label>Teacher Code:</label><br>
+        <input type="text" name="teacher_code"><br>
+
+        <label>Select Subjects:</label><br>
+        <select name="subject_ids" multiple size="5">
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Select Difficulty Levels:</label><br>
+        <select name="difficulty_ids" multiple size="3">
+            {% for level in difficulties %}
+                <option value="{{ level.id }}">{{ level.name }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Hourly Rate:</label><br>
+        <input type="number" name="hourly_rate"><br>
+    </div>
+    <button type="submit">Register</button>
+</form>
+<script>
+document.querySelector('select[name="role"]').addEventListener('change', function() {
+    var teacherFields = document.getElementById('teacher_fields');
+    teacherFields.style.display = this.value === 'teacher' ? 'block' : 'none';
+});
+</script>
+{% endblock %}

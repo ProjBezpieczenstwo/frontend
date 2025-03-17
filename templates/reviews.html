@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Teacher Reviews{% endblock %}
+{% block content %}
+<h2>Reviews for Teacher {{ teacher_id }}</h2>
+<ul>
+    {% for review in reviews %}
+        <li>
+            <strong>Rating:</strong> {{ review.rating }}<br>
+            <strong>Comment:</strong> {{ review.comment }}
+        </li>
+    {% endfor %}
+</ul>
+<h3>Add a Review</h3>
+<form method="post">
+    <label>Rating (0-5):</label><br>
+    <input type="number" name="rating" min="0" max="5" required><br>
+    <label>Comment:</label><br>
+    <textarea name="comment"></textarea><br>
+    <button type="submit">Submit Review</button>
+</form>
+{% endblock %}

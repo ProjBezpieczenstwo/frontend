@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Book a Lesson{% endblock %}
+{% block content %}
+<h2>Book a Lesson</h2>
+<form method="post">
+    <label>Teacher ID:</label><br>
+    <input type="number" name="teacher_id" required><br>
+    <label>Subject ID:</label><br>
+    <input type="number" name="subject_id" required><br>
+    <label>Difficulty Level ID:</label><br>
+    <input type="number" name="difficulty_id" required><br>
+    <label>Date (dd/mm/YYYY HH:MM):</label><br>
+    <input type="text" name="date" placeholder="e.g., 25/12/2025 14:00" required><br>
+    <button type="submit">Book Lesson</button>
+</form>
+{% endblock %}
