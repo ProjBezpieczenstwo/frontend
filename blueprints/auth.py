@@ -52,12 +52,21 @@ def login():
             flash("Logged in successfully!", "success")
             return redirect(url_for('index'))
         else:
-            subjects_response = requests.get(f"{get_api_base()}/subjects")
-            difficulties_response = requests.get(f"{get_api_base()}/difficulty-levels")
-            subjects = subjects_response.json().get('subjects', []) if subjects_response.status_code == 200 else []
-            difficulties = difficulties_response.json().get('difficulty_levels', []) if difficulties_response.status_code == 200 else []
-            return render_template('register.html', subjects=subjects, difficulties=difficulties)
+            flash(response.json().get("message"), "error")
     return render_template('login.html')
+
+@auth_bp.route('/confirm', methods=['GET'])
+def confirm():
+    uuid = request.args.get('uuid')
+    if uuid:
+        response = requests.get(f"{get_api_base()}/auth/confirm/{uuid}")
+        if response.status_code == 201:
+            flash(response.json().get("message"), "success")
+        else:
+            flash(response.json().get("message"),"error")
+    else:
+        flash("Invalid link","error")
+    return redirect(url_for('auth.login'))
 
 
 @auth_bp.route('/logout')
