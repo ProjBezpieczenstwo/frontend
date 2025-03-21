@@ -14,9 +14,6 @@
                 <a href="{{ url_for('reviews.reviews', teacher_id=0) }}">Reviews</a>
             {% elif session.get('role') == 'teacher' %}
                 <a href="{{ url_for('lessons.lesson_browser') }}">My Lessons</a>
-                <a href="{{ url_for('calendar.teacher_calendar') }}">My Calendar</a>
-                <a href="{{ url_for('reports.teacher_reports') }}">Reports</a>
-                <a href="{{ url_for('auth.update_teacher') }}">Update Profile</a>
             {% endif %}
             <a href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}

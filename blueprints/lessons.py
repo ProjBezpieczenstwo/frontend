@@ -24,6 +24,10 @@ def lesson_browser():
 
 @lessons_bp.route('/create', methods=['GET', 'POST'])
 def create_lesson():
+    subjects_response = requests.get(f"{get_api_base()}/api/subjects")
+    subjects = subjects_response.json().get("subjects")
+    difficulties_response = requests.get(f"{get_api_base()}/api/difficulty-levels")
+    difficulties = difficulties_response.json().get("difficulty_levels")
     if request.method == 'POST':
         teacher_id = request.form.get('teacher_id')
         subject_id = request.form.get('subject_id')
@@ -42,4 +46,4 @@ def create_lesson():
             return redirect(url_for('lessons.lesson_browser'))
         else:
             flash(response.json().get('message', 'Failed to book lesson.'), "error")
-    return render_template('create_lesson.html')
+    return render_template('create_lesson.html', subjects=subjects, difficulties=difficulties)
