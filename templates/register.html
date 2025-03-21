@@ -24,18 +24,14 @@
         <input type="text" name="teacher_code"><br>
 
         <label>Select Subjects:</label><br>
-        <select name="subject_ids" multiple size="5">
-            {% for subject in subjects %}
-                <option value="{{ subject.id }}">{{ subject.name }}</option>
-            {% endfor %}
-        </select><br>
-
+        {% for subject in subjects %}
+            <input type="checkbox" name="subject_ids" value="{{ subject.id }}"> {{ subject.name }}<br>
+        {% endfor %}
+        <br>
         <label>Select Difficulty Levels:</label><br>
-        <select name="difficulty_ids" multiple size="3">
-            {% for level in difficulties %}
-                <option value="{{ level.id }}">{{ level.name }}</option>
-            {% endfor %}
-        </select><br>
+        {% for difficulty in difficulties %}
+            <input type="checkbox" name="difficulty_ids" value="{{ difficulty.id }}"> {{ difficulty.name }}<br>
+        {% endfor %}
 
         <label>Hourly Rate:</label><br>
         <input type="number" name="hourly_rate"><br>

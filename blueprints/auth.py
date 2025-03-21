@@ -11,6 +11,8 @@ def get_api_base():
 def register():
     subjects_response = requests.get(f"{get_api_base()}/api/subjects")
     subjects = subjects_response.json().get("subjects")
+    difficulties_response = requests.get(f"{get_api_base()}/api/difficulty-levels")
+    difficulties = difficulties_response.json().get("difficulty_levels")
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
@@ -34,7 +36,7 @@ def register():
             return redirect(url_for('auth.login'))
         else:
             flash(response.json().get('message', 'Registration failed.'), "error")
-    return render_template('register.html',subjects=subjects)
+    return render_template('register.html',subjects=subjects,difficulties=difficulties)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
