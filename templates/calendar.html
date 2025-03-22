@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<h2>Modify Available Hours</h2>
+<form method="post">
+  <table>
+    <tr>
+      {% for day in days %}
+      <td>
+        <!-- If day.available_from is set, check the checkbox -->
+        <input type="checkbox" id="{{ day.weekday_id }}Checkbox"
+               onchange="toggleInputs('{{ day.weekday_id }}')"
+               {% if day.available_from %}checked{% endif %}>
+        <label for="{{ day.weekday_id }}Checkbox">{{ day.weekday }}</label><br>
+        From: <input type="number" id="{{ day.weekday_id }}From"
+                     name="{{ day.weekday_id }}From"
+                     min="16" max="22"
+                     required
+                     value="{{ day.available_from }}"
+                     {% if not day.available_from %}disabled{% endif %}><br>
+        To: <input type="number" id="{{ day.weekday_id }}To"
+                   name="{{ day.weekday_id }}To"
+                   min="16" max="22"
+                   required
+                   value="{{ day.available_until }}"
+                   {% if not day.available_from %}disabled{% endif %}>
+      </td>
+      {% endfor %}
+    </tr>
+  </table><br>
+  <input type="submit" value="Submit">
+</form>
+
+
+
+<script>
+    function toggleInputs(day) {
+      const checkbox = document.getElementById(day + 'Checkbox');
+      const fromInput = document.getElementById(day + 'From');
+      const toInput = document.getElementById(day + 'To');
+
+      // Enable inputs if checkbox is checked; disable if not
+      fromInput.disabled = !checkbox.checked;
+      toInput.disabled = !checkbox.checked;
+}
+</script>
+{% endblock %}
