@@ -81,9 +81,10 @@ def calendar():
             flash(response.json().get('message', 'Failed to update calendar.'), "error")
 
     calendar_resp = requests.get(f"{get_api_base()}/api/calendar", headers=headers)
-    calendar_data = calendar_resp.json()
-    calendar_dict = {str(entry['weekday_id']): entry for entry in calendar_data.get("calendar_list", [])}
-
+    calendar_dict = dict()
+    if calendar_resp:
+        calendar_data = calendar_resp.json()
+        calendar_dict = {str(entry['weekday_id']): entry for entry in calendar_data.get("calendar_list", [])}
     days = []
     for weekday in weekdays_data.get("weekdays", []):
         weekday_id = str(weekday["id"])
