@@ -10,16 +10,52 @@ def get_headers():
     token = session.get('access_token')
     return {"Authorization": f"Bearer {token}"} if token else {}
 
-@lessons_bp.route('/', methods=['GET'])
-def lesson_browser():
+@lessons_bp.route('/my_lessons', methods=['GET'])
+def my_lessons():
     headers = get_headers()
-    response = requests.get(f"{get_api_base()}/api/lesson", headers=headers)
+    # Używamy endpointu teacher-list, który zwraca listę nauczycieli
+    response = requests.get(f"{get_api_base()}/api/teacher-list", headers=headers)
     if response.status_code == 200:
-        lessons = response.json().get('lesson_list', [])
+        teachers = response.json().get('teacher_list', [])
     else:
-        lessons = []
-        flash(response.json().get('message', 'Could not retrieve lessons.'), "error")
-    return render_template('lesson_browser.html', lessons=lessons)
+        teachers = []
+        flash(response.json().get('message', 'Could not retrieve teachers.'), "error")
+    return render_template('teacher_browser.html', teachers=teachers)
+
+@lessons_bp.route('/teacher_browser', methods=['GET'])
+def teacher_browser():
+    headers = get_headers()
+    # Używamy endpointu teacher-list, który zwraca listę nauczycieli
+    response = requests.get(f"{get_api_base()}/api/teacher-list", headers=headers)
+    if response.status_code == 200:
+        teachers = response.json().get('teacher_list', [])
+    else:
+        teachers = []
+        flash(response.json().get('message', 'Could not retrieve teachers.'), "error")
+    return render_template('teacher_browser.html', teachers=teachers)
+
+@lessons_bp.route('/teacher/<int:teacher_id>', methods=['GET'])
+def teacher_details(teacher_id):
+    headers = get_headers()
+
+    # Pobieramy szczegółowe dane nauczyciela z API
+    teacher_response = requests.get(f"{get_api_base()}/api/teacher/{teacher_id}", headers=headers)
+    if teacher_response.status_code == 200:
+        teacher = teacher_response.json().get('teacher')
+    else:
+        flash(teacher_response.json().get('message', 'Could not retrieve teacher details.'), "error")
+        return redirect(url_for('lessons.teacher_browser'))
+
+    # Pobieramy recenzje nauczyciela
+    reviews_response = requests.get(f"{get_api_base()}/api/teacher-reviews/{teacher_id}", headers=headers)
+    if reviews_response.status_code == 200:
+        reviews = reviews_response.json().get('reviews', [])
+    else:
+        reviews = []
+        flash(reviews_response.json().get('message', 'Could not retrieve reviews.'), "error")
+
+    return render_template('teacher_details.html', teacher=teacher, reviews=reviews)
+
 
 @lessons_bp.route('/create', methods=['GET', 'POST'])
 def create_lesson():
@@ -42,7 +78,7 @@ def create_lesson():
         response = requests.post(f"{get_api_base()}/lesson", json=data, headers=headers)
         if response.status_code in (200, 201):
             flash("Lesson booked successfully!", "success")
-            return redirect(url_for('lessons.lesson_browser'))
+            return redirect(url_for('lessons.teacher_browser'))
         else:
             flash(response.json().get('message', 'Failed to book lesson.'), "error")
     return render_template('create_lesson.html', subjects=subjects, difficulties=difficulties)

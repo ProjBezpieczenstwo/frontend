@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Teacher List{% endblock %}
+{% block content %}
+<h2>Teachers</h2>
+<ul>
+    {% for teacher in teachers %}
+        <li>
+            <strong>{{ teacher.name }}</strong><br>
+            Hourly rate: {{ teacher.hourly_rate }}<br>
+            Subjects: 
+            {% if teacher.subjects %}
+                {% for subject in teacher.subjects %}
+                    {{ subject }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                No subjects listed
+            {% endif %}<br>
+            Levels:
+            {% if teacher.difficulty_levels %}
+                {% for level in teacher.difficulty_levels %}
+                    {{ level }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                No levels listed
+            {% endif %}<br>
+            <!-- Przycisk prowadzący do strony szczegółów nauczyciela -->
+            <a href="{{ url_for('lessons.teacher_details', teacher_id=teacher.id) }}" class="btn btn-primary">View Details</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

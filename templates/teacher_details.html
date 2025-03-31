@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Teacher Details{% endblock %}
+{% block content %}
+<h2>{{ teacher.name }}</h2>
+<p><strong>Hourly Rate:</strong> {{ teacher.hourly_rate }}</p>
+<p><strong>Subjects:</strong> 
+    {% if teacher.subjects %}
+        {{ teacher.subjects | join(', ') }}
+    {% else %}
+        No subjects listed.
+    {% endif %}
+</p>
+<p><strong>Levels:</strong>
+    {% if teacher.difficulty_levels %}
+        {{ teacher.difficulty_levels | join(', ') }}
+    {% else %}
+        No levels listed.
+    {% endif %}
+</p>
+
+<h3>Available Hours</h3>
+{% if teacher.available_hours %}
+    <ul>
+        {% for entry in teacher.available_hours %}
+            <li>
+                Day: {{ entry.weekday }} – From: {{ entry.available_from }} to {{ entry.available_until }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No available hours.</p>
+{% endif %}
+
+<h3>Reviews</h3>
+{% if reviews %}
+    <ul>
+        {% for review in reviews %}
+            <li>
+                <strong>Rating:</strong> {{ review.rating }}<br>
+                <strong>Comment:</strong> {{ review.comment }}<br>
+                <small>By Student ID: {{ review.student_id }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No reviews yet.</p>
+{% endif %}
+{% endblock %}
