@@ -15,6 +15,9 @@
             {% elif session.get('role') == 'teacher' %}
                 <a href="{{ url_for('lessons.my_lessons') }}">My Lessons</a>
                 <a href="{{ url_for('lessons.calendar') }}">Available Hours</a>
+            {% else %}
+                <a href="{{ url_for('admin.access_codes_page') }}">Access Codes</a>
+                <a href="{{ url_for('admin.users_page') }}">Users</a>
             {% endif %}
             <a href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}
