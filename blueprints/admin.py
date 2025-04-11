@@ -30,7 +30,7 @@ def register_admin():
 
         response = requests.post(f"{get_api_base()}/auth/register", json=data)
         if response.status_code in [200, 201]:
-            flash("Admin registered successfully. Please verify your email.", "success")
+            flash(response.json().get("message","Admin registered successfully"), "success")
             return redirect(url_for('auth.login'))
         else:
             flash(response.json().get('message', 'Registration failed.'), "error")
