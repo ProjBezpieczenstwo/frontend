@@ -1,31 +1,50 @@
 {% extends "base.html" %}
-{% block title %}Teacher List{% endblock %}
+{% block title %}Access Codes{% endblock %}
 {% block content %}
-<h2>Teachers</h2>
-<ul>
+
+<h1 class="mb-4">Przeglądaj Nauczycieli</h1>
+
+<!-- FILTRY -->
+<form method="get" action="{{ url_for('lessons.teacher_browser') }}" class="row g-3 mb-5">
+    <div class="col-md-5">
+        <label for="subject" class="form-label">Przedmiot</label>
+        <select name="subject" id="subject" class="form-select">
+            <option value="">-- Wszystkie --</option>
+            {% for subject in subjects %}
+            <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label for="difficulty_id" class="form-label">Poziom trudności</label>
+        <select name="difficulty_id" id="difficulty_id" class="form-select">
+            <option value="">-- Wszystkie --</option>
+            {% for level in difficulty_levels %}
+            <option value="{{ level.id }}">{{ level.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filtruj</button>
+    </div>
+</form>
+
+<!-- LISTA NAUCZYCIELI -->
+<h2 class="mb-3">Lista nauczycieli</h2>
+<ul class="list-group">
     {% for teacher in teachers %}
-        <li>
-            <strong>{{ teacher.name }}</strong><br>
-            Hourly rate: {{ teacher.hourly_rate }}<br>
-            Subjects: 
-            {% if teacher.subjects %}
-                {% for subject in teacher.subjects %}
-                    {{ subject }}{% if not loop.last %}, {% endif %}
-                {% endfor %}
-            {% else %}
-                No subjects listed
-            {% endif %}<br>
-            Levels:
-            {% if teacher.difficulty_levels %}
-                {% for level in teacher.difficulty_levels %}
-                    {{ level }}{% if not loop.last %}, {% endif %}
-                {% endfor %}
-            {% else %}
-                No levels listed
-            {% endif %}<br>
-            <!-- Przycisk prowadzący do strony szczegółów nauczyciela -->
-            <a href="{{ url_for('lessons.teacher_details', teacher_id=teacher.id) }}" class="btn btn-primary">View Details</a>
+        <li class="list-group-item p-4 mb-3 shadow-sm rounded">
+            <h5 class="mb-2">{{ teacher.full_name }}</h5>
+            <p><strong>Imie:</strong> {{ teacher.name }}</p>
+            <p><strong>Przedmioty:</strong> {{ teacher.subjects | join(', ') }}</p>
+            <p><strong>Poziomy trudności:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
+            <p><strong>Stawka godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
+            <p><strong>O nauczycielu:</strong> {{ teacher.bio }}</p>
         </li>
+    {% else %}
+        <li class="list-group-item">Nie znaleziono nauczycieli spełniających kryteria.</li>
     {% endfor %}
 </ul>
+
+
 {% endblock %}

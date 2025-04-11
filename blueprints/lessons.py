@@ -1,14 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 import requests
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 
 lessons_bp = Blueprint('lessons', __name__, template_folder='../templates')
+
 
 def get_api_base():
     return current_app.config.get("BACKEND_URL")
 
+
 def get_headers():
     token = session.get('access_token')
     return {"Authorization": f"Bearer {token}"} if token else {}
+
 
 @lessons_bp.route('/my_lessons', methods=['GET'])
 def my_lessons():
@@ -22,17 +25,32 @@ def my_lessons():
         flash(response.json().get('message', 'Could not retrieve teachers.'), "error")
     return render_template('teacher_browser.html', teachers=teachers)
 
+
 @lessons_bp.route('/teacher_browser', methods=['GET'])
 def teacher_browser():
     headers = get_headers()
-    # Używamy endpointu teacher-list, który zwraca listę nauczycieli
-    response = requests.get(f"{get_api_base()}/api/teacher-list", headers=headers)
-    if response.status_code == 200:
-        teachers = response.json().get('teacher_list', [])
+    #TODO zmienić z 0 na coś innego
+    teacher_response = requests.get(f"{get_api_base()}/api/teacher-list/0", headers=headers)
+    if teacher_response.status_code == 200:
+        teachers = teacher_response.json().get('teacher_list', [])
     else:
         teachers = []
-        flash(response.json().get('message', 'Could not retrieve teachers.'), "error")
-    return render_template('teacher_browser.html', teachers=teachers)
+        flash(teacher_response.json().get('message', 'Could not retrieve teachers.'), "error")
+    subject_response = requests.get(f"{get_api_base()}/api/subjects", headers=headers)
+    if subject_response.status_code == 200:
+        subjects = subject_response.json().get('subjects', [])
+    else:
+        subjects = []
+        flash(subject_response.json().get('message', 'Could not retrieve teachers.'), "error")
+    difficulties_response = requests.get(f"{get_api_base()}/api/difficulty-levels", headers=headers)
+    if difficulties_response.status_code == 200:
+        difficulty_levels = difficulties_response.json().get('difficulty_levels', [])
+    else:
+        difficulty_levels = []
+        flash(difficulties_response.json().get('message', 'Could not retrieve teachers.'), "error")
+    return render_template('teacher_browser.html', teachers=teachers, subjects=subjects,
+                           difficulty_levels=difficulty_levels)
+
 
 @lessons_bp.route('/teacher/<int:teacher_id>', methods=['GET'])
 def teacher_details(teacher_id):
@@ -142,5 +160,3 @@ def calendar():
         days.append(day_data)
 
     return render_template("calendar.html", days=days)
-
-

@@ -20,6 +20,7 @@
             <th>Created At</th>
             <th>Expires At</th>
             <th>Created By</th>
+            <th>Email</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -31,6 +32,7 @@
             <td>{{ code.created_at }}</td>
             <td>{{ code.expires_at }}</td>
             <td>{{ code.created_by }}</td>
+            <td>{{ code.email_to }}</td>
             <td>
                 <form method="post" action="{{ url_for('admin.delete_access_code_page', code_id=code.id) }}" style="display:inline;">
                     <button type="submit">Delete</button>
