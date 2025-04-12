@@ -36,7 +36,6 @@ def my_lessons():
             flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     else:
         lessons = []
-        flash(response.json().get('message', 'Could not retrieve lessons.'), "error")
     role = session['role']
     return render_template('lesson_browser.html', lessons=lessons, user_role=role)
 
@@ -53,7 +52,7 @@ def submit_review(lesson_id):
     }
     response = requests.post(f"{get_api_base()}/api/add_review", headers=headers, json=payload)
     if response.status_code != 200:
-        flash(respone.json(), "error")
+        flash(response.json(), "error")
     else:
         flash("Dziekujemy za ocene nauczyciela", "success")
         return redirect(url_for("lessons.my_lessons"))
