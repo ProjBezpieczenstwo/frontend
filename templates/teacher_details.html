@@ -1,63 +1,135 @@
 {% extends "base.html" %}
 {% block title %}{{ teacher.full_name }}{% endblock %}
-{% block content %}
 
+{% block content %}
 <h1>{{ teacher.full_name }}</h1>
 <p><strong>Imię:</strong> {{ teacher.name }}</p>
-<p><strong>Przedmioty:</strong> {{ teacher.subjects | join(', ') }}</p>
-<p><strong>Poziomy trudności:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
 <p><strong>Stawka godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
-<p><strong>O nauczycielu:</strong> {{ teacher.bio }}</p>
 
-<button onclick="openModal()">Zapisz mnie</button>
+<hr>
 
-<div id="lessonModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
-    <div style="background:white; padding:2rem; border-radius:10px; min-width:300px; max-width:90%;">
-        <h2>Zapisz się na lekcję</h2>
-        <form method="POST" action="{{ url_for('lessons.book_lesson', teacher_id=teacher.id) }}">
-            <div>
-                <label for="subject_id">Przedmiot</label>
-                <select name="subject_id" id="subject_id" required>
-                    {% for subject in teacher.subjects %}
-                    <option value="{{ subject.id }}">{{ subject.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div>
-                <label for="difficulty_level_id">Poziom trudności</label>
-                <select name="difficulty_level_id" id="difficulty_level_id" required>
-                    {% for level in teacher.difficulty_levels %}
-                    <option value="{{ level.id }}">{{ level.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div>
-                <label for="hour">Dostępna godzina</label>
-                <select name="hour" id="hour" required>
-                    {% for hour in teacher.available_hours %}
-                    <option value="{{ hour }}">{{ hour }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <button type="submit">Zapisz się</button>
-            <button type="button" onclick="closeModal()">Anuluj</button>
-        </form>
-
+<h2>Wybierz przedmiot i poziom trudności</h2>
+<form>
+    <div>
+        <label for="subject">Przedmiot:</label>
+        <select id="subject" name="subject">
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select>
     </div>
-</div>
+
+    <div>
+        <label for="difficulty">Poziom trudności:</label>
+        <select id="difficulty" name="difficulty">
+            {% for level in difficulty_levels %}
+                <option value="{{ level.id }}">{{ level.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<hr>
+
+<h2>Wybierz termin lekcji</h2>
+
+<form method="POST" action="{{ url_for('lessons.book_lesson', teacher_id=teacher.id) }}">
+    <div>
+        <label for="date">Data:</label>
+        <input type="text" id="date" name="date" required>
+    </div>
+
+    <div>
+        <label for="hour">Godzina:</label>
+        <select id="hour" name="hour" required>
+            <option value="">-- wybierz godzinę --</option>
+        </select>
+    </div>
+
+    <button type="submit">Zapisz się</button>
+</form>
 
 <script>
-function openModal() {
-    document.getElementById('lessonModal').style.display = 'flex';
-}
+    const calendarSlots = {{ calendar_slots|tojson }};
+    const lessons = calendarSlots.filter(slot => slot.busy);
+    const availability = calendarSlots.filter(slot => !slot.busy);
 
-function closeModal() {
-    document.getElementById('lessonModal').style.display = 'none';
-}
+    // Konwertujemy dni tygodnia na liczby JS (0 = niedziela, ..., 6 = sobota)
+    const weekdayMap = {
+        'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
+        'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 0
+    };
+
+    // Zbieramy dostępne dni tygodnia
+    const activeWeekdays = [...new Set(availability.map(s => weekdayMap[s.weekday]))];
+
+    // Flatpickr z ograniczeniem do dostępnych dni tygodnia
+    flatpickr("#date", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        enable: [
+            function(date) {
+                return activeWeekdays.includes(date.getDay());
+            }
+        ],
+        onChange: function(selectedDates, dateStr, instance) {
+            const chosenDate = new Date(dateStr);
+            const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+            // Filtrowanie dostępnych godzin w wybrany dzień
+            const availableHours = availability
+                .filter(s => s.weekday === chosenWeekday)
+                .map(s => {
+                    const startHour = parseInt(s.from.split(':')[0]); // np. 10
+                    const endHour = parseInt(s.until.split(':')[0]); // np. 12
+                    return Array.from({ length: endHour - startHour }, (_, i) => startHour + i); // np. [10, 11]
+                }).flat();
+
+            // Usuwamy zajęte godziny z lekcji
+            const busyHours = lessons
+                .filter(s => s.date === dateStr)
+                .map(s => parseInt(s.from.split(':')[0])); // Pobieramy godziny zajętych lekcji
+
+            const freeHours = availableHours.filter(h => !busyHours.includes(h)); // Dostępne godziny
+
+            const hourSelect = document.getElementById('hour');
+            hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
+
+            if (freeHours.length === 0) {
+                const option = document.createElement('option');
+                option.text = "Brak dostępnych godzin";
+                option.disabled = true;
+                hourSelect.appendChild(option);
+            } else {
+                // Dodajemy dostępne godziny do dropdown
+                freeHours.forEach(h => {
+                    const option = document.createElement('option');
+                    option.value = `${h.toString().padStart(2, '0')}:00`;
+                    option.textContent = `${h}:00`;
+                    hourSelect.appendChild(option);
+                });
+            }
+        }
+    });
 </script>
 
+
+
+<hr>
+
+<h2>Recenzje</h2>
+{% if reviews %}
+    <ul>
+        {% for review in reviews %}
+            <li>
+                <p><strong>Autor:</strong> {{ review.author }}</p>
+                <p><strong>Ocena:</strong> {{ review.rating }}/5</p>
+                <p><strong>Treść:</strong> {{ review.comment }}</p>
+                <hr>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Brak recenzji dla tego nauczyciela.</p>
+{% endif %}
 {% endblock %}

@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <title>{% block title %}Flask Frontend{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <body>
     <nav>
         <a href="{{ url_for('index') }}">Home</a>

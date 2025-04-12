@@ -26,15 +26,30 @@ def my_lessons():
         flash(response.json().get('message', 'Could not retrieve teachers.'), "error")
     return render_template('lesson_browser.html', teachers=teachers)
 
+
 @lessons_bp.route('/teacher_browser', methods=['GET'])
 def teacher_browser():
     headers = get_headers()
     teacher_api = f"{get_api_base()}/api/teacher-list/0"
     teacher_response = requests.get(teacher_api, headers=headers, params=request.args)
+
+    teachers = []
     if teacher_response.status_code == 200:
-        teachers = teacher_response.json().get('teacher_list', [])
+        raw_teachers = teacher_response.json().get('teacher_list', [])
+        for teacher in raw_teachers:
+            # Pobierz harmonogram kalendarza
+            calendar_resp = requests.get(f"{get_api_base()}/api/calendar/{teacher['id']}", headers=headers)
+            if calendar_resp.status_code == 200:
+                calendar_data = calendar_resp.json()
+                calendar_list = calendar_data.get('calendar', [])
+                teacher['calendar'] = [
+                    f"{entry['weekday']}: {entry['available_from']} - {entry['available_until']}"
+                    for entry in calendar_list
+                ]
+            else:
+                teacher['calendar'] = ["Brak dostępnych godzin."]
+            teachers.append(teacher)
     else:
-        teachers = []
         if teacher_response.status_code != 404:
             flash(teacher_response.json().get('message', 'Could not retrieve teachers.'), "error")
 
@@ -42,7 +57,8 @@ def teacher_browser():
     subjects = subject_response.json().get('subjects', []) if subject_response.status_code == 200 else []
 
     difficulties_response = requests.get(f"{get_api_base()}/api/difficulty-levels", headers=headers)
-    difficulty_levels = difficulties_response.json().get('difficulty_levels', []) if difficulties_response.status_code == 200 else []
+    difficulty_levels = difficulties_response.json().get('difficulty_levels',
+                                                         []) if difficulties_response.status_code == 200 else []
 
     return render_template('teacher_browser.html', teachers=teachers, subjects=subjects,
                            difficulty_levels=difficulty_levels)
@@ -93,27 +109,60 @@ def book_lesson(user, teacher_id):
 
     return redirect(url_for('lessons.teacher_browser', teacher_id=teacher_id))
 
+
 @lessons_bp.route('/teacher/<int:teacher_id>', methods=['GET'])
 def teacher_details(teacher_id):
     headers = get_headers()
 
-    # Pobieramy szczegółowe dane nauczyciela z API
+    # 1. Pobranie nauczyciela
     teacher_response = requests.get(f"{get_api_base()}/api/teacher/{teacher_id}", headers=headers)
-    if teacher_response.status_code == 200:
-        teacher = teacher_response.json().get('teacher')
-    else:
+    if teacher_response.status_code != 200:
         flash(teacher_response.json().get('message', 'Could not retrieve teacher details.'), "error")
         return redirect(url_for('lessons.teacher_browser'))
 
-    # Pobieramy recenzje nauczyciela
-    reviews_response = requests.get(f"{get_api_base()}/api/teacher-reviews/{teacher_id}", headers=headers)
-    if reviews_response.status_code == 200:
-        reviews = reviews_response.json().get('reviews', [])
-    else:
-        reviews = []
-        flash(reviews_response.json().get('message', 'Could not retrieve reviews.'), "error")
+    teacher = teacher_response.json().get('teacher')
+    subject_ids = teacher.get('subject_ids', [])
+    difficulty_ids = teacher.get('difficulty_level_ids', [])
 
-    return render_template('teacher_details.html', teacher=teacher, reviews=reviews)
+    # 2. Pobranie wszystkich przedmiotów i poziomów trudności
+    subjects = requests.get(f"{get_api_base()}/api/subjects", headers=headers).json().get('subjects', [])
+    difficulties = requests.get(f"{get_api_base()}/api/difficulty-levels", headers=headers).json().get('difficulty_levels', [])
+
+    # 3. Filtrowanie dostępnych opcji dla danego nauczyciela
+    teacher_subjects = [s for s in subjects if s['id'] in subject_ids]
+    teacher_difficulties = [d for d in difficulties if d['id'] in difficulty_ids]
+
+    # 4. Pobranie dostępnych godzin nauczyciela (kalendarz)
+    calendar_response = requests.get(f"{get_api_base()}/api/calendar/{teacher_id}", headers=headers)
+    calendar = calendar_response.json().get('calendar', []) if calendar_response.status_code == 200 else []
+
+    # 5. Pobranie już zaplanowanych lekcji
+    lesson_response = requests.get(f"{get_api_base()}/api/lesson/{teacher_id}", headers=headers)
+    lesson_data = lesson_response.json().get('lesson_list', []) if lesson_response.status_code == 200 else []
+
+    # 6. Mapowanie zajętości — uproszczenie do: weekday + godzina_start
+    busy_slots = set()
+    for lesson in lesson_data:
+        busy_slots.add(f"{lesson['weekday']} {lesson['start_time']}")
+
+    # 7. Tworzymy wpisy do kalendarza z informacją o zajętości
+    calendar_slots = []
+    for entry in calendar:
+        key = f"{entry['weekday']} {entry['available_from']}"
+        is_busy = key in busy_slots
+        calendar_slots.append({
+            'weekday': entry['weekday'],
+            'from': entry['available_from'],
+            'until': entry['available_until'],
+            'busy': is_busy
+        })
+
+    return render_template('teacher_details.html',
+                           teacher=teacher,
+                           subjects=teacher_subjects,
+                           difficulty_levels=teacher_difficulties,
+                           calendar_slots=calendar_slots)
+
 
 
 

@@ -40,6 +40,13 @@
             <p><strong>Poziomy Nauczania:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
             <p><strong>Stawka Godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
             <p><strong>O Nauczycielu:</strong> {{ teacher.bio }}</p>
+
+            <p><strong>Godziny pracy:</strong></p>
+            <ul>
+                {% for slot in teacher.calendar %}
+                <li>{{ slot }}</li>
+                {% endfor %}
+            </ul>
         </div>
     </a>
     {% else %}
