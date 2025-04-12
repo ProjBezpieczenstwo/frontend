@@ -2,49 +2,50 @@
 {% block title %}Access Codes{% endblock %}
 {% block content %}
 
-<h1 class="mb-4">Przeglądaj Nauczycieli</h1>
+<h1>Przeglądaj Nauczycieli</h1>
 
 <!-- FILTRY -->
-<form method="get" action="{{ url_for('lessons.teacher_browser') }}" class="row g-3 mb-5">
-    <div class="col-md-5">
-        <label for="subject" class="form-label">Przedmiot</label>
-        <select name="subject" id="subject" class="form-select">
+<form method="get" action="{{ url_for('lessons.teacher_browser') }}">
+    <div>
+        <label for="subject">Przedmiot</label>
+        <select name="subject" id="subject">
             <option value="">-- Wszystkie --</option>
             {% for subject in subjects %}
             <option value="{{ subject.id }}">{{ subject.name }}</option>
             {% endfor %}
         </select>
     </div>
-    <div class="col-md-5">
-        <label for="difficulty_id" class="form-label">Poziom trudności</label>
-        <select name="difficulty_id" id="difficulty_id" class="form-select">
+    <div>
+        <label for="difficulty_id">Poziom trudności</label>
+        <select name="difficulty_id" id="difficulty_id">
             <option value="">-- Wszystkie --</option>
             {% for level in difficulty_levels %}
             <option value="{{ level.id }}">{{ level.name }}</option>
             {% endfor %}
         </select>
     </div>
-    <div class="col-md-2 d-flex align-items-end">
-        <button type="submit" class="btn btn-primary w-100">Filtruj</button>
+    <div>
+        <button type="submit">Filtruj</button>
     </div>
 </form>
 
 <!-- LISTA NAUCZYCIELI -->
-<h2 class="mb-3">Lista nauczycieli</h2>
-<ul class="list-group">
+<h2>Lista Nauczycieli</h2>
+<div class="tile-container">
     {% for teacher in teachers %}
-        <li class="list-group-item p-4 mb-3 shadow-sm rounded">
-            <h5 class="mb-2">{{ teacher.full_name }}</h5>
-            <p><strong>Imie:</strong> {{ teacher.name }}</p>
+    <a class="teacher-tile" href="{{ url_for('lessons.teacher_details', teacher_id=teacher.id) }}">
+        <div class="tile">
+            <h3>{{ teacher.full_name }}</h3>
             <p><strong>Przedmioty:</strong> {{ teacher.subjects | join(', ') }}</p>
-            <p><strong>Poziomy trudności:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
-            <p><strong>Stawka godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
-            <p><strong>O nauczycielu:</strong> {{ teacher.bio }}</p>
-        </li>
+            <p><strong>Poziomy Nauczania:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
+            <p><strong>Stawka Godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
+            <p><strong>O Nauczycielu:</strong> {{ teacher.bio }}</p>
+        </div>
+    </a>
     {% else %}
-        <li class="list-group-item">Nie znaleziono nauczycieli spełniających kryteria.</li>
+        <p>No teachers found matching the criteria.</p>
     {% endfor %}
-</ul>
+</div>
 
 
 {% endblock %}

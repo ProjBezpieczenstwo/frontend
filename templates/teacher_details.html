@@ -1,48 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Teacher Details{% endblock %}
+{% block title %}{{ teacher.full_name }}{% endblock %}
 {% block content %}
-<h2>{{ teacher.name }}</h2>
-<p><strong>Hourly Rate:</strong> {{ teacher.hourly_rate }}</p>
-<p><strong>Subjects:</strong> 
-    {% if teacher.subjects %}
-        {{ teacher.subjects | join(', ') }}
-    {% else %}
-        No subjects listed.
-    {% endif %}
-</p>
-<p><strong>Levels:</strong>
-    {% if teacher.difficulty_levels %}
-        {{ teacher.difficulty_levels | join(', ') }}
-    {% else %}
-        No levels listed.
-    {% endif %}
-</p>
 
-<h3>Available Hours</h3>
-{% if teacher.available_hours %}
-    <ul>
-        {% for entry in teacher.available_hours %}
-            <li>
-                Day: {{ entry.weekday }} – From: {{ entry.available_from }} to {{ entry.available_until }}
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No available hours.</p>
-{% endif %}
+<h1>{{ teacher.full_name }}</h1>
+<p><strong>Imię:</strong> {{ teacher.name }}</p>
+<p><strong>Przedmioty:</strong> {{ teacher.subjects | join(', ') }}</p>
+<p><strong>Poziomy trudności:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
+<p><strong>Stawka godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
+<p><strong>O nauczycielu:</strong> {{ teacher.bio }}</p>
 
-<h3>Reviews</h3>
-{% if reviews %}
-    <ul>
-        {% for review in reviews %}
-            <li>
-                <strong>Rating:</strong> {{ review.rating }}<br>
-                <strong>Comment:</strong> {{ review.comment }}<br>
-                <small>By Student ID: {{ review.student_id }}</small>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No reviews yet.</p>
-{% endif %}
+<button onclick="openModal()">Zapisz mnie</button>
+
+<div id="lessonModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+    <div style="background:white; padding:2rem; border-radius:10px; min-width:300px; max-width:90%;">
+        <h2>Zapisz się na lekcję</h2>
+        <form method="POST" action="{{ url_for('lessons.book_lesson', teacher_id=teacher.id) }}">
+            <div>
+                <label for="subject_id">Przedmiot</label>
+                <select name="subject_id" id="subject_id" required>
+                    {% for subject in teacher.subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="difficulty_level_id">Poziom trudności</label>
+                <select name="difficulty_level_id" id="difficulty_level_id" required>
+                    {% for level in teacher.difficulty_levels %}
+                    <option value="{{ level.id }}">{{ level.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="hour">Dostępna godzina</label>
+                <select name="hour" id="hour" required>
+                    {% for hour in teacher.available_hours %}
+                    <option value="{{ hour }}">{{ hour }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit">Zapisz się</button>
+            <button type="button" onclick="closeModal()">Anuluj</button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+function openModal() {
+    document.getElementById('lessonModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('lessonModal').style.display = 'none';
+}
+</script>
+
 {% endblock %}
