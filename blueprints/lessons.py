@@ -1,6 +1,5 @@
 import requests
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
-from datetime import datetime
 
 lessons_bp = Blueprint('lessons', __name__, template_folder='../templates')
 
@@ -63,6 +62,7 @@ def teacher_browser():
     return render_template('teacher_browser.html', teachers=teachers, subjects=subjects,
                            difficulty_levels=difficulty_levels)
 
+
 @lessons_bp.route('/teacher/<int:teacher_id>/book', methods=['POST'])
 def book_lesson(user, teacher_id):
     headers = get_headers()
@@ -110,60 +110,33 @@ def book_lesson(user, teacher_id):
     return redirect(url_for('lessons.teacher_browser', teacher_id=teacher_id))
 
 
+from datetime import datetime
+
+
 @lessons_bp.route('/teacher/<int:teacher_id>', methods=['GET'])
 def teacher_details(teacher_id):
     headers = get_headers()
-
-    # 1. Pobranie nauczyciela
     teacher_response = requests.get(f"{get_api_base()}/api/teacher/{teacher_id}", headers=headers)
     if teacher_response.status_code != 200:
         flash(teacher_response.json().get('message', 'Could not retrieve teacher details.'), "error")
         return redirect(url_for('lessons.teacher_browser'))
-
     teacher = teacher_response.json().get('teacher')
-    subject_ids = teacher.get('subject_ids', [])
-    difficulty_ids = teacher.get('difficulty_level_ids', [])
-
-    # 2. Pobranie wszystkich przedmiotów i poziomów trudności
-    subjects = requests.get(f"{get_api_base()}/api/subjects", headers=headers).json().get('subjects', [])
-    difficulties = requests.get(f"{get_api_base()}/api/difficulty-levels", headers=headers).json().get('difficulty_levels', [])
-
-    # 3. Filtrowanie dostępnych opcji dla danego nauczyciela
-    teacher_subjects = [s for s in subjects if s['id'] in subject_ids]
-    teacher_difficulties = [d for d in difficulties if d['id'] in difficulty_ids]
-
-    # 4. Pobranie dostępnych godzin nauczyciela (kalendarz)
     calendar_response = requests.get(f"{get_api_base()}/api/calendar/{teacher_id}", headers=headers)
     calendar = calendar_response.json().get('calendar', []) if calendar_response.status_code == 200 else []
-
-    # 5. Pobranie już zaplanowanych lekcji
     lesson_response = requests.get(f"{get_api_base()}/api/lesson/{teacher_id}", headers=headers)
     lesson_data = lesson_response.json().get('lesson_list', []) if lesson_response.status_code == 200 else []
-
-    # 6. Mapowanie zajętości — uproszczenie do: weekday + godzina_start
-    busy_slots = set()
+    lesson_dto = []
     for lesson in lesson_data:
-        busy_slots.add(f"{lesson['weekday']} {lesson['start_time']}")
-
-    # 7. Tworzymy wpisy do kalendarza z informacją o zajętości
-    calendar_slots = []
-    for entry in calendar:
-        key = f"{entry['weekday']} {entry['available_from']}"
-        is_busy = key in busy_slots
-        calendar_slots.append({
-            'weekday': entry['weekday'],
-            'from': entry['available_from'],
-            'until': entry['available_until'],
-            'busy': is_busy
-        })
+        lesson_datetime = datetime.strptime(lesson['date'], "%d/%m/%Y %H:%M")
+        lesson_date = lesson_datetime.date()
+        if lesson_date >= today:
+            lesson_datetime_str = lesson_datetime.strftime('%Y-%m-%d %H:%M')
+            lesson_dto.add(lesson_datetime_str)
 
     return render_template('teacher_details.html',
                            teacher=teacher,
-                           subjects=teacher_subjects,
-                           difficulty_levels=teacher_difficulties,
-                           calendar_slots=calendar_slots)
-
-
+                           lessons=lesson_dto,
+                           calendar=calendar)
 
 
 @lessons_bp.route('/calendar', methods=['GET', 'POST'])

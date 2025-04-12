@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block title %}{{ teacher.full_name }}{% endblock %}
 
 {% block content %}
@@ -13,8 +14,8 @@
     <div>
         <label for="subject">Przedmiot:</label>
         <select id="subject" name="subject">
-            {% for subject in subjects %}
-                <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% for subject in teacher.subjects %}
+                <option value="{{ subject }}">{{ subject }}</option>
             {% endfor %}
         </select>
     </div>
@@ -22,8 +23,8 @@
     <div>
         <label for="difficulty">Poziom trudności:</label>
         <select id="difficulty" name="difficulty">
-            {% for level in difficulty_levels %}
-                <option value="{{ level.id }}">{{ level.name }}</option>
+            {% for level in teacher.difficulty_levels %}
+                <option value="{{ level }}">{{ level }}</option>
             {% endfor %}
         </select>
     </div>
@@ -50,9 +51,10 @@
 </form>
 
 <script>
-    const calendarSlots = {{ calendar_slots|tojson }};
-    const lessons = calendarSlots.filter(slot => slot.busy);
-    const availability = calendarSlots.filter(slot => !slot.busy);
+    // Pobieranie danych z szablonu
+    const calendarSlots = {{ calendar | tojson }};
+    const lessons = {{ lessons | tojson }};
+    const busySlots = lessons.map(lesson => lesson.date);  // Zajęte godziny
 
     // Konwertujemy dni tygodnia na liczby JS (0 = niedziela, ..., 6 = sobota)
     const weekdayMap = {
@@ -61,7 +63,7 @@
     };
 
     // Zbieramy dostępne dni tygodnia
-    const activeWeekdays = [...new Set(availability.map(s => weekdayMap[s.weekday]))];
+    const activeWeekdays = [...new Set(calendarSlots.map(s => weekdayMap[s.weekday]))];
 
     // Flatpickr z ograniczeniem do dostępnych dni tygodnia
     flatpickr("#date", {
@@ -77,18 +79,15 @@
             const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
 
             // Filtrowanie dostępnych godzin w wybrany dzień
-            const availableHours = availability
+            const availableHours = calendarSlots
                 .filter(s => s.weekday === chosenWeekday)
-                .map(s => {
-                    const startHour = parseInt(s.from.split(':')[0]); // np. 10
-                    const endHour = parseInt(s.until.split(':')[0]); // np. 12
-                    return Array.from({ length: endHour - startHour }, (_, i) => startHour + i); // np. [10, 11]
-                }).flat();
+                .map(s => s.available_hours)  // Lista dostępnych godzin w wybranym dniu
+                .flat(); // Spłaszczamy, bo dostępne godziny mogą być w zagnieżdżonej tablicy
 
             // Usuwamy zajęte godziny z lekcji
-            const busyHours = lessons
-                .filter(s => s.date === dateStr)
-                .map(s => parseInt(s.from.split(':')[0])); // Pobieramy godziny zajętych lekcji
+            const busyHours = busySlots
+                .filter(s => s.startsWith(dateStr)) // Sprawdzamy, czy lekcja dotyczy wybranego dnia
+                .map(s => s.split(' ')[1]); // Pobieramy godziny lekcji
 
             const freeHours = availableHours.filter(h => !busyHours.includes(h)); // Dostępne godziny
 
@@ -104,16 +103,23 @@
                 // Dodajemy dostępne godziny do dropdown
                 freeHours.forEach(h => {
                     const option = document.createElement('option');
-                    option.value = `${h.toString().padStart(2, '0')}:00`;
-                    option.textContent = `${h}:00`;
+                    option.value = h;
+                    option.textContent = h;
                     hourSelect.appendChild(option);
                 });
             }
+
+            // Zmiana koloru godzin w zależności od dostępności
+            const hourOptions = hourSelect.querySelectorAll('option');
+            hourOptions.forEach(option => {
+                if (busyHours.includes(option.value)) {
+                    option.style.color = 'red';  // Zmieniamy kolor na czerwony
+                    option.disabled = true;     // Ustawiamy opcję jako niedostępną
+                }
+            });
         }
     });
 </script>
-
-
 
 <hr>
 
