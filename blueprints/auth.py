@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 import requests
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 
 auth_bp = Blueprint('auth', __name__, template_folder='../templates')
+
 
 def get_api_base():
     return current_app.config.get("BACKEND_URL")
@@ -36,7 +37,7 @@ def register():
             return redirect(url_for('auth.login'))
         else:
             flash(response.json().get('message', 'Registration failed.'), "error")
-    return render_template('register.html',subjects=subjects,difficulties=difficulties)
+    return render_template('register.html', subjects=subjects, difficulties=difficulties)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -55,6 +56,7 @@ def login():
             flash(response.json().get("message"), "error")
     return render_template('login.html')
 
+
 @auth_bp.route('/confirm', methods=['GET'])
 def confirm():
     uuid = request.args.get('uuid')
@@ -63,9 +65,9 @@ def confirm():
         if response.status_code == 201:
             flash(response.json().get("message"), "success")
         else:
-            flash(response.json().get("message"),"error")
+            flash(response.json().get("message"), "error")
     else:
-        flash("Invalid link","error")
+        flash("Invalid link", "error")
     return redirect(url_for('auth.login'))
 
 
@@ -74,3 +76,36 @@ def logout():
     session.clear()
     flash("Logged out successfully", "success")
     return redirect(url_for('index'))
+
+# TEST REGISTER
+
+@auth_bp.route('/test/register', methods=['GET', 'POST'])
+def test_register():
+    subjects_response = requests.get(f"{get_api_base()}/api/subjects")
+    subjects = subjects_response.json().get("subjects")
+    difficulties_response = requests.get(f"{get_api_base()}/api/difficulty-levels")
+    difficulties = difficulties_response.json().get("difficulty_levels")
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')  # 'student' or 'teacher'
+        data = {"name": name, "email": email, "password": password, "role": role}
+
+        # If teacher, add extra fields
+        if role == 'teacher':
+            subject_list = request.form.getlist('subject_ids')
+            difficulty_list = request.form.getlist('difficulty_ids')
+
+            data['subject_ids'] = "{" + ",".join(subject_list) + "}"
+            data['difficulty_ids'] = "{" + ",".join(difficulty_list) + "}"
+            data['teacher_code'] = request.form.get('teacher_code')
+            data['hourly_rate'] = request.form.get('hourly_rate')
+
+        response = requests.post(f"{get_api_base()}/auth/test/register", json=data)
+        if response.status_code == 200:
+            flash("Registration successful! Testowa rejestracja bez potwierdzania emaila", "success")
+            return redirect(url_for('auth.login'))
+        else:
+            flash(response.json().get('message', 'Registration failed.'), "error")
+    return render_template('register.html', subjects=subjects, difficulties=difficulties)

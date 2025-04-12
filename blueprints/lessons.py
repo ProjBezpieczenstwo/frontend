@@ -1,9 +1,10 @@
-from datetime import timedelta,datetime
-
-import requests
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 import logging
 import sys
+from datetime import timedelta, datetime
+
+import requests
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, Response
+
 logging.basicConfig(
     level=logging.INFO,  # lub DEBUG jeśli chcesz więcej szczegółów
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
@@ -29,10 +30,33 @@ def my_lessons():
     response = requests.get(f"{get_api_base()}/api/lesson", headers=headers)
     if response.status_code == 200:
         lessons = response.json().get('lesson_list', [])
+        try:
+            lessons.sort(key=lambda lesson: datetime.strptime(lesson['date'], "%d/%m/%Y %H:%M"))
+        except (KeyError, ValueError) as e:
+            flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     else:
         lessons = []
         flash(response.json().get('message', 'Could not retrieve lessons.'), "error")
-    return render_template('lesson_browser.html', lessons=lessons)
+    role = session['role']
+    return render_template('lesson_browser.html', lessons=lessons, user_role=role)
+
+
+@lessons_bp.route('/submit_review/<int:lesson_id>', methods=['POST'])
+def submit_review(lesson_id):
+    headers = get_headers()
+    rating = request.form.get('rating')
+    comment = request.form.get('comment')
+    payload = {
+        "lesson_id": lesson_id,
+        "rating": rating,
+        "comment": comment
+    }
+    response = requests.post(f"{get_api_base()}/api/add_review", headers=headers, json=payload)
+    if response.status_code != 200:
+        flash(respone.json(), "error")
+    else:
+        flash("Dziekujemy za ocene nauczyciela", "success")
+        return redirect(url_for("lessons.my_lessons"))
 
 
 @lessons_bp.route('/teacher_browser', methods=['GET'])
@@ -93,15 +117,13 @@ def book_lesson(teacher_id):
     # Wyślij zapytanie do API
     response = requests.post(f"{get_api_base()}/api/lesson", json=payload, headers=headers)
 
-    if response.status_code == 200:
+    if response.status_code == 201:
         flash("Zapisano na lekcję!", "success")
     else:
         message = response.json().get("message", "Błąd podczas zapisu.")
         flash(message, "error")
 
     return redirect(url_for('lessons.teacher_browser', teacher_id=teacher_id))
-
-
 
 
 @lessons_bp.route('/teacher/<int:teacher_id>', methods=['GET'])
@@ -112,6 +134,8 @@ def teacher_details(teacher_id):
         flash(teacher_response.json().get('message', 'Could not retrieve teacher details.'), "error")
         return redirect(url_for('lessons.teacher_browser'))
     teacher = teacher_response.json().get('teacher')
+    reviews_response = requests.get(f"{get_api_base()}/api/teacher-reviews/{teacher_id}", headers=headers)
+    reviews = reviews_response.json().get('reviews', []) if reviews_response.status_code == 200 else []
     calendar_response = requests.get(f"{get_api_base()}/api/calendar/{teacher_id}", headers=headers)
     calendar = calendar_response.json().get('calendar', []) if calendar_response.status_code == 200 else []
     lesson_response = requests.get(f"{get_api_base()}/api/lesson/{teacher_id}", headers=headers)
@@ -128,7 +152,8 @@ def teacher_details(teacher_id):
     return render_template('teacher_details.html',
                            teacher=teacher,
                            lessons=lesson_dto,
-                           calendar=calendar)
+                           calendar=calendar,
+                           reviews=reviews)
 
 
 @lessons_bp.route('/calendar', methods=['GET', 'POST'])
@@ -189,3 +214,25 @@ def calendar():
         days.append(day_data)
 
     return render_template("calendar.html", days=days)
+
+
+@lessons_bp.route('/pdf_generator', methods=['GET'])
+def pdf_generator():
+    headers = get_headers()
+    response = requests.get(f"{get_api_base()}/api/calendar/pdf", headers=headers)
+
+    if response.status_code == 200:
+        # Pobieramy plik PDF
+        pdf_file = response.content
+
+        # Zwracamy plik PDF do pobrania
+        return Response(
+            pdf_file,
+            mimetype='application/pdf',
+            headers={
+                "Content-Disposition": "attachment; filename=lesson_plan.pdf"
+            }
+        )
+    else:
+        flash("Błąd pobierania PDF.", "error")
+        return redirect(url_for('lessons.my_lessons'))

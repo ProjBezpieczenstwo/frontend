@@ -7,17 +7,27 @@
 {% if lessons %}
     <h2>Twoje lekcje:</h2>
     <ul class="lesson-list">
+        {% if user_role == 'teacher' %}
+        <form method="GET" action="{{ url_for('lessons.pdf_generator') }}">
+                <button class="btn btn-primary mt-2"> Generate pdf</button>
+        </form>
+        {% endif %}
         {% for lesson in lessons %}
             <li class="lesson-card">
+                {% if user_role == 'student' %}
+                    <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
+                {% endif %}
+                {% if user_role == 'teacher' %}
+                    <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
+                {% endif %}
                 <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
                 <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
                 <strong>Data:</strong> {{ lesson.date }} <br>
                 <strong>Status:</strong> {{ lesson.status }} <br>
                 <strong>Cena:</strong> {{ lesson.price }} PLN <br>
                 <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
-                <strong>Zgłoszona:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }}
 
-                {% if lesson.status == 'completed' and not lesson.is_reviewed %}
+                {% if lesson.status == 'completed' and not lesson.is_reviewed and user_role == 'student' %}
                     <!-- Button trigger modal -->
                     <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reviewModal{{ lesson.id }}">
                         Add review
