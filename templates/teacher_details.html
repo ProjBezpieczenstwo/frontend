@@ -7,10 +7,9 @@
 <p><strong>Imię:</strong> {{ teacher.name }}</p>
 <p><strong>Stawka godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
 
-<hr>
 
-<h2>Wybierz przedmiot i poziom trudności</h2>
-<form>
+<h2>Wybierz zajecia</h2>
+<form method="POST" action="{{ url_for('lessons.book_lesson', teacher_id=teacher.id) }}">
     <div>
         <label for="subject">Przedmiot:</label>
         <select id="subject" name="subject">
@@ -28,13 +27,6 @@
             {% endfor %}
         </select>
     </div>
-</form>
-
-<hr>
-
-<h2>Wybierz termin lekcji</h2>
-
-<form method="POST" action="{{ url_for('lessons.book_lesson', teacher_id=teacher.id) }}">
     <div>
         <label for="date">Data:</label>
         <input type="text" id="date" name="date" required>
@@ -54,7 +46,8 @@
     // Pobieranie danych z szablonu
     const calendarSlots = {{ calendar | tojson }};
     const lessons = {{ lessons | tojson }};
-    const busySlots = lessons.map(lesson => lesson.date);  // Zajęte godziny
+    const busySlots = lessons;  // lessons to po prostu lista stringów "YYYY-MM-DD HH:MM"
+  // Zajęte godziny
 
     // Konwertujemy dni tygodnia na liczby JS (0 = niedziela, ..., 6 = sobota)
     const weekdayMap = {
@@ -67,58 +60,59 @@
 
     // Flatpickr z ograniczeniem do dostępnych dni tygodnia
     flatpickr("#date", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        enable: [
-            function(date) {
-                return activeWeekdays.includes(date.getDay());
-            }
-        ],
-        onChange: function(selectedDates, dateStr, instance) {
-            const chosenDate = new Date(dateStr);
-            const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
-
-            // Filtrowanie dostępnych godzin w wybrany dzień
-            const availableHours = calendarSlots
-                .filter(s => s.weekday === chosenWeekday)
-                .map(s => s.available_hours)  // Lista dostępnych godzin w wybranym dniu
-                .flat(); // Spłaszczamy, bo dostępne godziny mogą być w zagnieżdżonej tablicy
-
-            // Usuwamy zajęte godziny z lekcji
-            const busyHours = busySlots
-                .filter(s => s.startsWith(dateStr)) // Sprawdzamy, czy lekcja dotyczy wybranego dnia
-                .map(s => s.split(' ')[1]); // Pobieramy godziny lekcji
-
-            const freeHours = availableHours.filter(h => !busyHours.includes(h)); // Dostępne godziny
-
-            const hourSelect = document.getElementById('hour');
-            hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
-
-            if (freeHours.length === 0) {
-                const option = document.createElement('option');
-                option.text = "Brak dostępnych godzin";
-                option.disabled = true;
-                hourSelect.appendChild(option);
-            } else {
-                // Dodajemy dostępne godziny do dropdown
-                freeHours.forEach(h => {
-                    const option = document.createElement('option');
-                    option.value = h;
-                    option.textContent = h;
-                    hourSelect.appendChild(option);
-                });
-            }
-
-            // Zmiana koloru godzin w zależności od dostępności
-            const hourOptions = hourSelect.querySelectorAll('option');
-            hourOptions.forEach(option => {
-                if (busyHours.includes(option.value)) {
-                    option.style.color = 'red';  // Zmieniamy kolor na czerwony
-                    option.disabled = true;     // Ustawiamy opcję jako niedostępną
-                }
-            });
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    enable: [
+        function(date) {
+            return activeWeekdays.includes(date.getDay());
         }
-    });
+    ],
+    onChange: function(selectedDates, dateStr, instance) {
+        const chosenDate = new Date(dateStr);
+        const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+        // Filtrowanie dostępnych godzin w wybrany dzień
+        const availableHours = calendarSlots
+            .filter(s => s.weekday === chosenWeekday)
+            .map(s => s.available_hours)  // Lista dostępnych godzin w wybranym dniu
+            .flat(); // Spłaszczamy, bo dostępne godziny mogą być w zagnieżdżonej tablicy
+
+        // Usuwamy zajęte godziny z lekcji
+        const busyHours = busySlots
+            .filter(s => s.startsWith(dateStr)) // Sprawdzamy, czy lekcja dotyczy wybranego dnia
+            .map(s => s.split(' ')[1]); // Pobieramy godziny lekcji
+
+        const freeHours = availableHours.filter(h => !busyHours.includes(h)); // Dostępne godziny
+
+        // Łączymy dostępne godziny i zajęte godziny w jedną tablicę
+        const allHours = [...freeHours, ...busyHours];  // Wszystkie godziny w kolejności: wolne + zajęte
+
+        // Sortowanie godzin w porządku rosnącym
+        allHours.sort((a, b) => {
+            const [aHour, aMinute] = a.split(':').map(Number);
+            const [bHour, bMinute] = b.split(':').map(Number);
+            return aHour - bHour || aMinute - bMinute;
+        });
+
+        const hourSelect = document.getElementById('hour');
+        hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
+
+        allHours.forEach(h => {
+            const option = document.createElement('option');
+            option.value = h;
+            option.textContent = h;
+
+            if (busyHours.includes(h)) {
+                option.disabled = true;  // Ustawiamy godzinę jako niedostępną
+                option.style.color = 'red';  // Zmieniamy kolor na czerwony
+            }
+
+            hourSelect.appendChild(option);
+        });
+    }
+});
+
+
 </script>
 
 <hr>

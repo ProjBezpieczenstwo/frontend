@@ -1,6 +1,16 @@
+from datetime import timedelta,datetime
+
 import requests
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+import logging
+import sys
+logging.basicConfig(
+    level=logging.INFO,  # lub DEBUG jeśli chcesz więcej szczegółów
+    format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 
+logger = logging.getLogger(__name__)
 lessons_bp = Blueprint('lessons', __name__, template_folder='../templates')
 
 
@@ -16,14 +26,13 @@ def get_headers():
 @lessons_bp.route('/my_lessons', methods=['GET'])
 def my_lessons():
     headers = get_headers()
-    # Używamy endpointu teacher-list, który zwraca listę nauczycieli
-    response = requests.get(f"{get_api_base()}/api/teacher-list/0", headers=headers)
+    response = requests.get(f"{get_api_base()}/api/lesson", headers=headers)
     if response.status_code == 200:
-        teachers = response.json().get('teacher_list', [])
+        lessons = response.json().get('lesson_list', [])
     else:
-        teachers = []
-        flash(response.json().get('message', 'Could not retrieve teachers.'), "error")
-    return render_template('lesson_browser.html', teachers=teachers)
+        lessons = []
+        flash(response.json().get('message', 'Could not retrieve lessons.'), "error")
+    return render_template('lesson_browser.html', lessons=lessons)
 
 
 @lessons_bp.route('/teacher_browser', methods=['GET'])
@@ -42,7 +51,7 @@ def teacher_browser():
                 calendar_data = calendar_resp.json()
                 calendar_list = calendar_data.get('calendar', [])
                 teacher['calendar'] = [
-                    f"{entry['weekday']}: {entry['available_from']} - {entry['available_until']}"
+                    f"{entry['weekday']}: {entry['available_hours'][0]} - {(datetime.strptime(entry['available_hours'][-1], '%H:%M') + timedelta(hours=1)).strftime('%H:%M')}"
                     for entry in calendar_list
                 ]
             else:
@@ -64,40 +73,23 @@ def teacher_browser():
 
 
 @lessons_bp.route('/teacher/<int:teacher_id>/book', methods=['POST'])
-def book_lesson(user, teacher_id):
+def book_lesson(teacher_id):
     headers = get_headers()
 
-    subject_id = request.form.get('subject_id')
-    difficulty_level_id = request.form.get('difficulty_level_id')
+    subject = request.form.get('subject')
+    difficulty = request.form.get('difficulty')
+    date = request.form.get('date')
     hour = request.form.get('hour')
-
-    # Zakładamy dzisiejszą datę + godzina z formularza
-    try:
-        now = datetime.now().date()
-        lesson_datetime = datetime.strptime(f"{now} {hour}", "%Y-%m-%d %H:%M")
-        date_str = lesson_datetime.isoformat()  # format zgodny z JSON/API
-    except ValueError:
-        flash("Nieprawidłowa godzina.", "error")
-        return redirect(url_for('lessons.teacher_details', teacher_id=teacher_id))
-
-    # Ustal cenę lekcji (jeśli masz ją z frontendu/obiektu nauczyciela możesz też przekazać)
-    price = request.form.get('price')  # alternatywnie pobierz z API nauczyciela
-    if not price:
-        flash("Brak informacji o cenie.", "error")
-        return redirect(url_for('lessons.teacher_details', teacher_id=teacher_id))
-
+    lesson_datetime = datetime.strptime(f"{date} {hour}", "%Y-%m-%d %H:%M")
+    date_str = lesson_datetime.strftime("%d/%m/%Y %H:%M")
+    logging.info(date_str)
     # Przygotuj payload
     payload = {
         "teacher_id": teacher_id,
-        "subject_id": subject_id,
-        "difficulty_level_id": difficulty_level_id,
-        "date": date_str,
-        "status": "scheduled",
-        "is_reviewed": False,
-        "is_reported": False,
-        "price": float(price),
+        "subject": subject,
+        "difficulty": difficulty,
+        "date": date_str
     }
-
     # Wyślij zapytanie do API
     response = requests.post(f"{get_api_base()}/api/lesson", json=payload, headers=headers)
 
@@ -110,7 +102,6 @@ def book_lesson(user, teacher_id):
     return redirect(url_for('lessons.teacher_browser', teacher_id=teacher_id))
 
 
-from datetime import datetime
 
 
 @lessons_bp.route('/teacher/<int:teacher_id>', methods=['GET'])
@@ -126,12 +117,13 @@ def teacher_details(teacher_id):
     lesson_response = requests.get(f"{get_api_base()}/api/lesson/{teacher_id}", headers=headers)
     lesson_data = lesson_response.json().get('lesson_list', []) if lesson_response.status_code == 200 else []
     lesson_dto = []
+    today = datetime.today().date()
     for lesson in lesson_data:
         lesson_datetime = datetime.strptime(lesson['date'], "%d/%m/%Y %H:%M")
         lesson_date = lesson_datetime.date()
         if lesson_date >= today:
             lesson_datetime_str = lesson_datetime.strftime('%Y-%m-%d %H:%M')
-            lesson_dto.add(lesson_datetime_str)
+            lesson_dto.append(lesson_datetime_str)
 
     return render_template('teacher_details.html',
                            teacher=teacher,

@@ -1,5 +1,61 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
+
 {% block content %}
 <h1>Welcome to the Lesson Booking System</h1>
+
+{% if lessons %}
+    <h2>Twoje lekcje:</h2>
+    <ul class="lesson-list">
+        {% for lesson in lessons %}
+            <li class="lesson-card">
+                <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
+                <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
+                <strong>Data:</strong> {{ lesson.date }} <br>
+                <strong>Status:</strong> {{ lesson.status }} <br>
+                <strong>Cena:</strong> {{ lesson.price }} PLN <br>
+                <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
+                <strong>Zgłoszona:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }}
+
+                {% if lesson.status == 'completed' and not lesson.is_reviewed %}
+                    <!-- Button trigger modal -->
+                    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reviewModal{{ lesson.id }}">
+                        Add review
+                    </button>
+
+                    <!-- Review Modal -->
+                    <div class="modal fade" id="reviewModal{{ lesson.id }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ lesson.id }}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <form method="POST" action="{{ url_for('lessons.submit_review', lesson_id=lesson.id) }}">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="reviewModalLabel{{ lesson.id }}">Dodaj recenzję</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label for="rating{{ lesson.id }}">Ocena:</label><br>
+                                <select name="rating" id="rating{{ lesson.id }}" class="form-select" required>
+                                    <option value="">-- wybierz --</option>
+                                    {% for i in range(1, 6) %}
+                                        <option value="{{ i }}">{{ i }} ★</option>
+                                    {% endfor %}
+                                </select>
+
+                                <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
+                                <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="submit" class="btn btn-success">Zatwierdź</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Nie masz jeszcze żadnych lekcji.</p>
+{% endif %}
 {% endblock %}
