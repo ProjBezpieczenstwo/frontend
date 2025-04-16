@@ -45,3 +45,4 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_a5d1f273407849bfa0ac117d27d12c82 }}
           images: 'ghcr.io/projbezpieczenstwo/frontend:${{ github.sha }}'
+
