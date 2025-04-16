@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_9ef3a727c4ef4bbea2f9bcf5d4fee317 }}/appsvc/staticsite:${{ github.sha }}
+        tags: mcr.microsoft.com/projbezpieczenstwo/appsvc/staticsite:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -48,4 +48,4 @@ jobs:
         app-name: 'projbezpieczenstwo'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_a0efc17959324a5bb8b9c7ced3b18bf9 }}
-        images: 'mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_9ef3a727c4ef4bbea2f9bcf5d4fee317 }}/appsvc/staticsite:${{ github.sha }}'
+        images: 'mcr.microsoft.com/projbezpieczenstwo/appsvc/staticsite:${{ github.sha }}'
