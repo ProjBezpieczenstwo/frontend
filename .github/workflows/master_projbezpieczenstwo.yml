@@ -23,8 +23,8 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://ghcr.io/projbezpieczenstwo/frontend:latest/
-        username: ${{ secrets.AzureAppService_ContainerUsername_9d902431da7245a696193cdd1a8c44c5 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_21aa9479c7a44982ada53beb21605382 }}
+        username: ${{ secrets.AZURE_USERNAME }}
+        password: ${{ secrets.AZURE_PASSWORD }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
