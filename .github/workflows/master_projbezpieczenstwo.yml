@@ -22,10 +22,10 @@ jobs:
     - name: Log in to registry
       uses: docker/login-action@v2
       with:
-        registry: ghcr.io/projbezpieczenstwo/frontend:lates
-        username: ${{ secrets.AZURE_USERNAME }}
-        password: ${{ secrets.AZURE_PASSWORD }}
-
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.CR_PAT }}
+        
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
