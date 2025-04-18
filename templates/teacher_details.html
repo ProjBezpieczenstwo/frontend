@@ -116,19 +116,17 @@
 </script>
 
 <hr>
-
-<h2>Recenzje</h2>
 {% if reviews %}
-    <ul>
-        {% for review in reviews %}
-            <li>
-                <p><strong>Autor:</strong> {{ review.student_id }}</p>
-                <p><strong>Ocena:</strong> {{ review.rating }}/5</p>
-                <p><strong>Treść:</strong> {{ review.comment }}</p>
-                <hr>
-            </li>
-        {% endfor %}
-    </ul>
+<h2>Recenzje</h2>
+<div class="tile-container">
+    {% for review in reviews %}
+    <div class="tile">
+        <p><strong>Autor:</strong> {{ review.student_id }}</p>
+        <p><strong>Ocena:</strong> {{ review.rating }}/5</p>
+        <p><strong>Treść:</strong> {{ review.comment }}</p>
+    </div>
+    {% endfor %}
+</div>
 {% else %}
     <p>Brak recenzji dla tego nauczyciela.</p>
 {% endif %}
