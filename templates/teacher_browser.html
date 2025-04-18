@@ -35,7 +35,7 @@
     {% for teacher in teachers %}
     <a class="teacher-tile" href="{{ url_for('lessons.teacher_details', teacher_id=teacher.id) }}">
         <div class="tile">
-            <h3>{{ teacher.name }}</h3>
+            <p><strong>Imie:</strong> {{ teacher.name }}</p>
             <p><strong>Przedmioty:</strong> {{ teacher.subjects | join(', ') }}</p>
             <p><strong>Poziomy Nauczania:</strong> {{ teacher.difficulty_levels | join(', ') }}</p>
             <p><strong>Stawka Godzinowa:</strong> {{ teacher.hourly_rate }} PLN</p>
