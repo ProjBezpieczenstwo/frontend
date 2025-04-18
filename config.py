@@ -2,5 +2,5 @@ import os
 
 
 class Config:
-    BACKEND_URL = os.environ.get("BACKEND_URL", "http://app-server:5000")
+    BACKEND_URL = os.getenv("backend-uri")
     SECRET_KEY = os.environ.get("SECRET_KEY", "that-sucks")
