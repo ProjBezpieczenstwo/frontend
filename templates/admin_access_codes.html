@@ -5,6 +5,8 @@
 
 <!-- Formularz generowania nowego access code -->
 <form method="post" action="{{ url_for('admin.create_access_code_page') }}">
+    <label for="number">Number of codes:</label>
+    <input type="number" name="number" id="number" value="1" min="1">
     <label for="email">Optional Email to notify:</label>
     <input type="email" name="email" id="email">
     <button type="submit">Generate Access Code</button>

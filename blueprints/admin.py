@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
 import requests
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
 
 admin_bp = Blueprint('admin', __name__, template_folder='../templates')
 
+
 def get_api_base():
     return current_app.config.get("BACKEND_URL")
+
 
 def get_headers():
     # Zakładamy, że token admina jest w sesji
@@ -30,7 +32,7 @@ def register_admin():
 
         response = requests.post(f"{get_api_base()}/auth/register", json=data)
         if response.status_code in [200, 201]:
-            flash(response.json().get("message","Admin registered successfully"), "success")
+            flash(response.json().get("message", "Admin registered successfully"), "success")
             return redirect(url_for('auth.login'))
         else:
             flash(response.json().get('message', 'Registration failed.'), "error")
@@ -50,7 +52,8 @@ def create_access_code_page():
     headers = get_headers()
     # Optional email field to notify the user about the access code.
     email = request.form.get('email')
-    data = {"email": email} if email else {}
+    number = request.form.get('number')
+    data = {"email": email, "number": number} if email else {"number": number}
     response = requests.post(f"{get_api_base()}/admin/access_codes", json=data, headers=headers)
     if response.status_code == 201:
         flash("Access code created", "success")
@@ -69,6 +72,7 @@ def delete_access_code_page(code_id):
         flash(response.json().get('message', 'Error deleting access code'), "error")
     return redirect(url_for('admin.access_codes_page'))
 
+
 # Strona do zarządzania użytkownikami
 @admin_bp.route('/users', methods=['GET'])
 def users_page():
@@ -83,6 +87,7 @@ def users_page():
     else:
         flash(response.json().get('message', 'Error retrieving users'), "error")
         return redirect(url_for('index'))
+
 
 # Usuwanie użytkownika – metoda POST
 @admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
