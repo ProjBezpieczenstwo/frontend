@@ -8,6 +8,16 @@ def get_api_base():
     return current_app.config.get("BACKEND_URL")
 
 
+@auth_bp.route('/confirm/<token>', methods=['GET'])
+def confirm(token):
+    response = requests.get(f"{get_api_base()}/api/v1/auth/confirm/{token}")
+    if response.status_code != 201:
+        flash("Invalid link", "error")
+    else:
+        flash("Now u can log in", "success")
+    return redirect(url_for('auth.login'))
+
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     subjects_response = requests.get(f"{get_api_base()}/api/subjects")
@@ -76,6 +86,7 @@ def logout():
     session.clear()
     flash("Logged out successfully", "success")
     return redirect(url_for('index'))
+
 
 # TEST REGISTER
 
