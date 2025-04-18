@@ -2,18 +2,17 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Welcome to the Lesson Booking System</h1>
-
 {% if lessons %}
-    <h2>Twoje lekcje:</h2>
-    <ul class="lesson-list">
-        {% if user_role == 'teacher' %}
-        <form method="GET" action="{{ url_for('lessons.pdf_generator') }}">
-                <button class="btn btn-primary mt-2"> Generate pdf</button>
-        </form>
-        {% endif %}
-        {% for lesson in lessons %}
-            <li class="lesson-card">
+<h2>Twoje Lekcje</h2>
+<div class="tile-container">
+    {% if user_role == 'teacher' %}
+    <form method="GET" action="{{ url_for('lessons.pdf_generator') }}">
+            <button class="btn btn-primary mt-2"> Generate pdf</button>
+    </form>
+    {% endif %}
+    {% for lesson in lessons %}
+
+    <div class="tile">
                 {% if user_role == 'student' %}
                     <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
                 {% endif %}
@@ -62,10 +61,11 @@
                       </div>
                     </div>
                 {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+            </div>
+    {% endfor %}
+</div>
 {% else %}
     <p>Nie masz jeszcze żadnych lekcji.</p>
 {% endif %}
 {% endblock %}
+
