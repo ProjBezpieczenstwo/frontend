@@ -8,8 +8,9 @@ def get_api_base():
     return current_app.config.get("BACKEND_URL")
 
 
-@auth_bp.route('/confirm/<token>', methods=['GET'])
-def confirm(token):
+@auth_bp.route('/confirm', methods=['GET'])
+def confirm():
+    token = request.args.get('token')
     response = requests.get(f"{get_api_base()}/auth/confirm/{token}")
     if response.status_code != 201:
         flash("Invalid link", "error")
