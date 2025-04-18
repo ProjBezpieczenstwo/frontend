@@ -67,20 +67,6 @@ def login():
     return render_template('login.html')
 
 
-@auth_bp.route('/confirm', methods=['GET'])
-def confirm():
-    uuid = request.args.get('uuid')
-    if uuid:
-        response = requests.get(f"{get_api_base()}/auth/confirm/{uuid}")
-        if response.status_code == 201:
-            flash(response.json().get("message"), "success")
-        else:
-            flash(response.json().get("message"), "error")
-    else:
-        flash("Invalid link", "error")
-    return redirect(url_for('auth.login'))
-
-
 @auth_bp.route('/logout')
 def logout():
     session.clear()
