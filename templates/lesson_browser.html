@@ -27,7 +27,9 @@
                 <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
                 <strong>Czy zraportowana:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }} <br>
                 {% if lesson.is_reported %}
-                <strong>Raport:</strong> {{  lesson.report }} <br>
+                <strong>Praca domowa:</strong> {{  lesson.report.homework }} <br>
+                <strong>Ocena z zajęć:</strong> {{  lesson.report.progress_rating }}/5 <br>
+                <strong>Komentarz:</strong> {{  lesson.report.comment}} <br>
                 {% endif %}
                 {% if lesson.status == 'completed' and not lesson.is_reviewed and user_role == 'student' %}
                     <!-- Button trigger modal -->
