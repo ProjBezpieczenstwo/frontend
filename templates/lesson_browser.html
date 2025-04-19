@@ -25,6 +25,7 @@
                 <strong>Status:</strong> {{ lesson.status }} <br>
                 <strong>Cena:</strong> {{ lesson.price }} PLN <br>
                 <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
+                <strong>Raport:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }} <br>
 
                 {% if lesson.status == 'completed' and not lesson.is_reviewed and user_role == 'student' %}
                     <!-- Button trigger modal -->
@@ -61,11 +62,71 @@
                       </div>
                     </div>
                 {% endif %}
+                {% if lesson.status == 'completed' and not lesson.is_reported and user_role == 'teacher' %}
+                <!-- Button trigger modal -->
+                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reportModal{{ lesson.id }}">
+                    Add Report
+                </button>
+                <!-- Report Modal -->
+                <div class="modal fade" id="reportModal{{ lesson.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ lesson.id }}" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <form method="POST" action="{{ url_for('lessons.submit_report', lesson_id=lesson.id) }}">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="reportModalLabel{{ lesson.id }}">Dodaj raport</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Rating field (same as progress rating) -->
+                            <label for="progress_rating{{ lesson.id }}">Ocena postępu:</label><br>
+                            <select name="progress_rating" id="progress_rating{{ lesson.id }}" class="form-select" required>
+                                <option value="">-- wybierz --</option>
+                                {% for i in range(1, 6) %}
+                                    <option value="{{ i }}">{{ i }} ★</option>
+                                {% endfor %}
+                            </select>
+
+                            <!-- Comment field -->
+                            <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
+                            <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+
+                            <!-- Homework field -->
+                            <label for="homework{{ lesson.id }}" class="mt-3">Zadanie domowe:</label>
+                            <textarea name="homework" id="homework{{ lesson.id }}" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="submit" class="btn btn-success">Zatwierdź</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+            {% endif %}
+            {% if lesson.status == 'scheduled' %}
+                {% set current_time = now() %}
+                {% set lesson_time = lesson.date %}
+                {% if lesson_time > current_time + timedelta(hours=1) %}
+                    <!-- Button to trigger confirmation dialog -->
+                    <button class="btn btn-info mt-2" onclick="confirmRedirect('{{ url_for('lesson', lesson_id=lesson.id) }}')">
+                        Go to Lesson
+                    </button>
+                {% endif %}
+            {% endif %}
             </div>
     {% endfor %}
 </div>
 {% else %}
     <p>Nie masz jeszcze żadnych lekcji.</p>
 {% endif %}
+<script>
+function confirmRedirect(url) {
+    // Ask for confirmation
+    if (confirm("Czy na pewno chcesz anulowac lekcje?")) {
+        // If confirmed, redirect to the provided URL
+        window.location.href = url;
+    }
+    // If canceled, do nothing
+}
+</script>
 {% endblock %}
 

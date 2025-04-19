@@ -2,7 +2,8 @@ import logging
 import sys
 from datetime import timedelta, datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, Response
-from helper import api_get, api_post
+
+from helper import api_get, api_post, api_put
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,6 +29,30 @@ def my_lessons():
     role = session.get('role')
     return render_template('lesson_browser.html', lessons=lessons, user_role=role)
 
+
+@lessons_bp.route('/submit-report/<int:lesson_id>', methods=['POST'])
+def submit_report(lesson_id):
+    payload = {
+        "lesson_id": lesson_id,
+        "comment": request.form['comment'],
+        "homework": request.form['homework'],
+        "progress_rating": request.form['progress_rating']
+    }
+    response = api.port("/api/report", json=payload)
+    if response.status_code != 200:
+        flash(response.json(), "error")
+    else:
+        flash("Raport z lekcji został przesłany", "success")
+    return redirect(url_for("lessons.my_lessons"))
+
+@lessons_bp.route('/lesson/<int:lesson_id>', methods=['GET'])
+def lesson(lesson_id):
+    response = api_put(f"/api/lesson/{lesson_id}")
+    if response.status_code != 200:
+        flash(response.json(), "error")
+    else:
+        flash("Zajecia zostały anulowane","success")
+    return redirect(url_for("lessons.my_lessons"))
 
 @lessons_bp.route('/submit_review/<int:lesson_id>', methods=['POST'])
 def submit_review(lesson_id):

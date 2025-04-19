@@ -22,3 +22,6 @@ def api_post(endpoint, json=None):
 
 def api_delete(endpoint, **kwargs):
     return requests.delete(f"{get_api_base()}{endpoint}", headers=get_headers(), **kwargs)
+
+def api_put(endpoint, json=None):
+    return requests.put(f"{get_api_base()}{endpoint}", headers=get_headers(), json=json)
