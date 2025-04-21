@@ -28,6 +28,8 @@ def my_lessons():
             flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     role = session.get('role')
     current_time = datetime.now() + timedelta(hours=1)
+    for l in lessons:
+        l.date = datetime.fromisoformat(l.date)
     return render_template('lesson_browser.html', lessons=lessons, user_role=role,current_time = current_time)
 
 
