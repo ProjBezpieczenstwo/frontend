@@ -153,7 +153,7 @@ def teacher_details(teacher_id):
     today = datetime.today().date()
     for lesson in lesson_data:
         lesson_datetime = datetime.strptime(lesson['date'], "%d/%m/%Y %H:%M")
-        if lesson_datetime.date() >= today:
+        if lesson_datetime.date() >= today and lesson['status'] != 'cancelled':
             lesson_dto.append(lesson_datetime.strftime('%Y-%m-%d %H:%M'))
 
     return render_template('teacher_details.html',
