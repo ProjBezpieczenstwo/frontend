@@ -108,7 +108,7 @@
             {% endif %}
             {% if lesson.status == 'scheduled' %}
                 {% set lesson_time = lesson.date %}
-                {% if lesson_time > current_time + timedelta(hours=1) %}
+                {% if lesson_time > current_time %}
                     <!-- Button to trigger confirmation dialog -->
                     <button class="btn btn-info mt-2" onclick="confirmRedirect('{{ url_for('lesson', lesson_id=lesson.id) }}')">
                         Go to Lesson

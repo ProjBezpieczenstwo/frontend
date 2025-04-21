@@ -27,7 +27,7 @@ def my_lessons():
         except (KeyError, ValueError) as e:
             flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     role = session.get('role')
-    current_time = datetime.now()
+    current_time = datetime.now() + timedelta(hours=1)
     return render_template('lesson_browser.html', lessons=lessons, user_role=role,current_time = current_time)
 
 
