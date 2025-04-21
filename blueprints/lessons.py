@@ -52,7 +52,7 @@ def submit_report(lesson_id):
 def lesson(lesson_id):
     response = api_put(f"/api/lesson/{lesson_id}")
     if response.status_code != 200:
-        flash(response.json(), "error")
+        flash("coś sie rozjebało", "error")
     else:
         flash("Zajecia zostały anulowane","success")
     return redirect(url_for("lessons.my_lessons"))
