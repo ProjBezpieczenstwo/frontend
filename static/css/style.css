@@ -44,9 +44,10 @@ nav a {
 
 .teacher-tile {
     text-decoration: none;
-    flex-direction: column;
-    gap: 2rem;
     color: inherit;
+}
+.tile-container h4 {
+    margin-top: 2rem;
 }
 
 .tile {
