@@ -111,7 +111,7 @@
                 {% if lesson_time > current_time %}
                     <!-- Button to trigger confirmation dialog -->
                     <button class="btn btn-info mt-2" onclick="confirmRedirect('{{ url_for('lessons.lesson', lesson_id=lesson.id) }}')">
-                        Go to Lesson
+                        Cancel lesson
                     </button>
                 {% endif %}
             {% endif %}
