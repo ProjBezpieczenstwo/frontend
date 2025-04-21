@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from helper import api_get, api_post, api_delete
+from blueprints.helper import api_get, api_post, api_delete
 
 admin_bp = Blueprint('admin', __name__, template_folder='../templates')
 

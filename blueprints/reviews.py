@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from helper import api_get, api_post
+from blueprints.helper import api_get, api_post
 
 reviews_bp = Blueprint('reviews', __name__, template_folder='../templates')
 
