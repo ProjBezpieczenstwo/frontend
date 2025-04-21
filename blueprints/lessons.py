@@ -87,9 +87,7 @@ def teacher_browser():
                     f"{(datetime.strptime(entry['available_hours'][-1], '%H:%M') + timedelta(hours=1)).strftime('%H:%M')}"
                     for entry in calendar_list
                 ]
-            else:
-                teacher['calendar'] = ["Brak dostępnych godzin."]
-            teachers.append(teacher)
+                teachers.append(teacher)
     else:
         if teacher_response.status_code != 404:
             flash(teacher_response.json().get('message', 'Could not retrieve teachers.'), "error")
