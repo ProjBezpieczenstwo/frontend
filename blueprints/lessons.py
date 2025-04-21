@@ -38,7 +38,7 @@ def submit_report(lesson_id):
         "homework": request.form['homework'],
         "progress_rating": request.form['progress_rating']
     }
-    response = api.port("/api/report", json=payload)
+    response = api_post("/api/report", json=payload)
     if response.status_code != 200:
         flash(response.json(), "error")
     else:
