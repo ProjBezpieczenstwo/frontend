@@ -31,10 +31,18 @@
                 <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
                 <strong>Czy zraportowana:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }} <br>
                 {% if lesson.is_reported %}
-                <strong>Praca domowa:</strong> {{  lesson.report.homework }} <br>
-                <strong>Ocena z zajęć:</strong> {{  lesson.report.progress_rating }}/5 <br>
-                <strong>Komentarz:</strong> {{  lesson.report.comment}} <br>
+                    <button class="btn btn-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#reportCollapse{{ lesson.id }}" aria-expanded="false" aria-controls="reportCollapse{{ lesson.id }}">
+                        Pokaż raport
+                    </button>
+                    <div class="collapse mt-2" id="reportCollapse{{ lesson.id }}">
+                        <div class="card card-body">
+                            <strong>Praca domowa:</strong> {{ lesson.report.homework }} <br>
+                            <strong>Ocena z zajęć:</strong> {{ lesson.report.progress_rating }}/5 <br>
+                            <strong>Komentarz:</strong> {{ lesson.report.comment }} <br>
+                        </div>
+                    </div>
                 {% endif %}
+
                 {% if lesson.status == 'completed' and not lesson.is_reviewed and user_role == 'student' %}
                     <!-- Button trigger modal -->
                     <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reviewModal{{ lesson.id }}">

@@ -25,7 +25,7 @@ def my_lessons():
         for l in lessons:
             l['date'] = datetime.strptime(l['date'], "%d/%m/%Y %H:%M")
         try:
-            lessons.sort(key=lambda l: l['date'])
+            lessons.sort(key=lambda l: l['date'],reverse = True)
         except (KeyError, ValueError) as e:
             flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     role = session.get('role')
