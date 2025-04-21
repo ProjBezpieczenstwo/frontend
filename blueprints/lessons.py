@@ -27,7 +27,8 @@ def my_lessons():
         except (KeyError, ValueError) as e:
             flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     role = session.get('role')
-    return render_template('lesson_browser.html', lessons=lessons, user_role=role)
+    current_time = datetime.now()
+    return render_template('lesson_browser.html', lessons=lessons, user_role=role,current_time = current_time)
 
 
 @lessons_bp.route('/submit-report/<int:lesson_id>', methods=['POST'])

@@ -107,7 +107,6 @@
                 </div>
             {% endif %}
             {% if lesson.status == 'scheduled' %}
-                {% set current_time = now() %}
                 {% set lesson_time = lesson.date %}
                 {% if lesson_time > current_time + timedelta(hours=1) %}
                     <!-- Button to trigger confirmation dialog -->
