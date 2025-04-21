@@ -11,165 +11,171 @@
         <button class="btn btn-primary mt-2">Generate PDF</button>
     </form>
     {% endif %}
+</div>
 
 
     <!-- 🔜 ZAPLANOWANE LEKCJE -->
     {% set scheduled_lessons = lessons | selectattr("status", "equalto", "scheduled") | list %}
     {% if scheduled_lessons %}
         <h4 class="mt-4">Zaplanowane lekcje</h4>
-        {% for lesson in scheduled_lessons %}
-        <div class="tile">
-            {% if user_role == 'student' %}
-                <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
-            {% endif %}
-            {% if user_role == 'teacher' %}
-                <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
-            {% endif %}
-            <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
-            <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
-            <strong>Data:</strong> {{ lesson.date }} <br>
-            <strong>Status:</strong> {{ lesson.status }} <br>
-            <strong>Cena:</strong> {{ lesson.price }} PLN <br>
+        <div class="tile-container">
+            {% for lesson in scheduled_lessons %}
+            <div class="tile">
+                {% if user_role == 'student' %}
+                    <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
+                {% endif %}
+                {% if user_role == 'teacher' %}
+                    <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
+                {% endif %}
+                <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
+                <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
+                <strong>Data:</strong> {{ lesson.date }} <br>
+                <strong>Status:</strong> {{ lesson.status }} <br>
+                <strong>Cena:</strong> {{ lesson.price }} PLN <br>
 
-            {% if lesson.date > current_time %}
-            <button class="btn btn-info mt-2" onclick="confirmRedirect('{{ url_for('lessons.lesson', lesson_id=lesson.id) }}')">
-                Cancel lesson
-            </button>
-            {% endif %}
+                {% if lesson.date > current_time %}
+                <button class="btn btn-info mt-2" onclick="confirmRedirect('{{ url_for('lessons.lesson', lesson_id=lesson.id) }}')">
+                    Cancel lesson
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     {% endif %}
     <!-- ✅ ZAKOŃCZONE LEKCJE -->
     {% set completed_lessons = lessons | selectattr("status", "equalto", "completed") | list %}
     {% if completed_lessons %}
         <h4 class="mt-4">Zakończone lekcje</h4>
-        {% for lesson in completed_lessons %}
-        <div class="tile">
-            {% if user_role == 'student' %}
-                <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
-            {% endif %}
-            {% if user_role == 'teacher' %}
-                <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
-            {% endif %}
-            <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
-            <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
-            <strong>Data:</strong> {{ lesson.date }} <br>
-            <strong>Status:</strong>
-            <span style="color: {{ 'red' if lesson.status == 'cancelled' else 'black' }}">
-                {{ lesson.status }}
-            </span><br>
-            <strong>Cena:</strong> {{ lesson.price }} PLN <br>
-            <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
-            <strong>Czy zraportowana:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }} <br>
+        <div class="tile-container">
+            {% for lesson in completed_lessons %}
+            <div class="tile">
+                {% if user_role == 'student' %}
+                    <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
+                {% endif %}
+                {% if user_role == 'teacher' %}
+                    <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
+                {% endif %}
+                <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
+                <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
+                <strong>Data:</strong> {{ lesson.date }} <br>
+                <strong>Status:</strong>
+                <span style="color: {{ 'red' if lesson.status == 'cancelled' else 'black' }}">
+                    {{ lesson.status }}
+                </span><br>
+                <strong>Cena:</strong> {{ lesson.price }} PLN <br>
+                <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
+                <strong>Czy zraportowana:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }} <br>
 
-            {% if lesson.is_reported %}
-            <button class="btn btn-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#reportCollapse{{ lesson.id }}">
-                Pokaż raport
-            </button>
-            <div class="collapse mt-2" id="reportCollapse{{ lesson.id }}">
-                <div class="card card-body">
-                    <strong>Praca domowa:</strong> {{ lesson.report.homework }} <br>
-                    <strong>Ocena z zajęć:</strong> {{ lesson.report.progress_rating }}/5 <br>
-                    <strong>Komentarz:</strong> {{ lesson.report.comment }} <br>
+                {% if lesson.is_reported %}
+                <button class="btn btn-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#reportCollapse{{ lesson.id }}">
+                    Pokaż raport
+                </button>
+                <div class="collapse mt-2" id="reportCollapse{{ lesson.id }}">
+                    <div class="card card-body">
+                        <strong>Praca domowa:</strong> {{ lesson.report.homework }} <br>
+                        <strong>Ocena z zajęć:</strong> {{ lesson.report.progress_rating }}/5 <br>
+                        <strong>Komentarz:</strong> {{ lesson.report.comment }} <br>
+                    </div>
                 </div>
+                {% endif %}
+
+                {% if not lesson.is_reviewed and user_role == 'student' %}
+                    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reviewModal{{ lesson.id }}">
+                        Add review
+                    </button>
+                    <!-- Modal review (pozostaje bez zmian) -->
+                    <div class="modal fade" id="reviewModal{{ lesson.id }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ lesson.id }}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <form method="POST" action="{{ url_for('lessons.submit_review', lesson_id=lesson.id) }}">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="reviewModalLabel{{ lesson.id }}">Dodaj recenzję</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label for="rating{{ lesson.id }}">Ocena:</label><br>
+                                <select name="rating" id="rating{{ lesson.id }}" class="form-select" required>
+                                    <option value="">-- wybierz --</option>
+                                    {% for i in range(1, 6) %}
+                                        <option value="{{ i }}">{{ i }} ★</option>
+                                    {% endfor %}
+                                </select>
+
+                                <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
+                                <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="submit" class="btn btn-success">Zatwierdź</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                {% endif %}
+
+                {% if not lesson.is_reported and user_role == 'teacher' %}
+                    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reportModal{{ lesson.id }}">
+                        Add Report
+                    </button>
+                    <!-- Modal raportu (pozostaje bez zmian) -->
+                    <div class="modal fade" id="reportModal{{ lesson.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ lesson.id }}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <form method="POST" action="{{ url_for('lessons.submit_report', lesson_id=lesson.id) }}">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="reportModalLabel{{ lesson.id }}">Dodaj raport</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label for="progress_rating{{ lesson.id }}">Ocena postępu:</label><br>
+                                <select name="progress_rating" id="progress_rating{{ lesson.id }}" class="form-select" required>
+                                    <option value="">-- wybierz --</option>
+                                    {% for i in range(1, 6) %}
+                                        <option value="{{ i }}">{{ i }} ★</option>
+                                    {% endfor %}
+                                </select>
+
+                                <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
+                                <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+
+                                <label for="homework{{ lesson.id }}" class="mt-3">Zadanie domowe:</label>
+                                <textarea name="homework" id="homework{{ lesson.id }}" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="submit" class="btn btn-success">Zatwierdź</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                {% endif %}
             </div>
-            {% endif %}
-
-            {% if not lesson.is_reviewed and user_role == 'student' %}
-                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reviewModal{{ lesson.id }}">
-                    Add review
-                </button>
-                <!-- Modal review (pozostaje bez zmian) -->
-                <div class="modal fade" id="reviewModal{{ lesson.id }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ lesson.id }}" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <form method="POST" action="{{ url_for('lessons.submit_review', lesson_id=lesson.id) }}">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="reviewModalLabel{{ lesson.id }}">Dodaj recenzję</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <label for="rating{{ lesson.id }}">Ocena:</label><br>
-                            <select name="rating" id="rating{{ lesson.id }}" class="form-select" required>
-                                <option value="">-- wybierz --</option>
-                                {% for i in range(1, 6) %}
-                                    <option value="{{ i }}">{{ i }} ★</option>
-                                {% endfor %}
-                            </select>
-
-                            <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
-                            <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="submit" class="btn btn-success">Zatwierdź</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-            {% endif %}
-
-            {% if not lesson.is_reported and user_role == 'teacher' %}
-                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reportModal{{ lesson.id }}">
-                    Add Report
-                </button>
-                <!-- Modal raportu (pozostaje bez zmian) -->
-                <div class="modal fade" id="reportModal{{ lesson.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ lesson.id }}" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <form method="POST" action="{{ url_for('lessons.submit_report', lesson_id=lesson.id) }}">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="reportModalLabel{{ lesson.id }}">Dodaj raport</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <label for="progress_rating{{ lesson.id }}">Ocena postępu:</label><br>
-                            <select name="progress_rating" id="progress_rating{{ lesson.id }}" class="form-select" required>
-                                <option value="">-- wybierz --</option>
-                                {% for i in range(1, 6) %}
-                                    <option value="{{ i }}">{{ i }} ★</option>
-                                {% endfor %}
-                            </select>
-
-                            <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
-                            <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
-
-                            <label for="homework{{ lesson.id }}" class="mt-3">Zadanie domowe:</label>
-                            <textarea name="homework" id="homework{{ lesson.id }}" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="submit" class="btn btn-success">Zatwierdź</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-            {% endif %}
+            {% endfor %}
         </div>
-        {% endfor %}
     {% endif %}
 
     <!-- ❌ ANULOWANE LEKCJE -->
     {% set cancelled_lessons = lessons | selectattr("status", "equalto", "cancelled") | list %}
     {% if cancelled_lessons %}
         <h4 class="mt-4">Anulowane lekcje</h4>
-        {% for lesson in cancelled_lessons %}
-        <div class="tile">
-            {% if user_role == 'student' %}
-                <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
-            {% endif %}
-            {% if user_role == 'teacher' %}
-                <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
-            {% endif %}
-            <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
-            <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
-            <strong>Data:</strong> {{ lesson.date }} <br>
-            <strong>Status:</strong> <span style="color: red;">{{ lesson.status }}</span> <br>
-            <strong>Cena:</strong> {{ lesson.price }} PLN <br>
+        <div class="tile-container">
+            {% for lesson in cancelled_lessons %}
+            <div class="tile">
+                {% if user_role == 'student' %}
+                    <strong>Prowadzący:</strong> {{ lesson.teacher_id }} <br>
+                {% endif %}
+                {% if user_role == 'teacher' %}
+                    <strong>Uczeń:</strong> {{ lesson.student_id }} <br>
+                {% endif %}
+                <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
+                <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
+                <strong>Data:</strong> {{ lesson.date }} <br>
+                <strong>Status:</strong> <span style="color: red;">{{ lesson.status }}</span> <br>
+                <strong>Cena:</strong> {{ lesson.price }} PLN <br>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     {% endif %}
-</div>
 {% else %}
     <p>Nie masz jeszcze żadnych lekcji.</p>
 {% endif %}

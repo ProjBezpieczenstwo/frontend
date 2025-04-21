@@ -46,9 +46,6 @@ nav a {
     text-decoration: none;
     color: inherit;
 }
-.tile-container h4 {
-    margin-top: 2rem;
-}
 
 .tile {
     border: 1px solid #ccc;
