@@ -22,14 +22,14 @@ def my_lessons():
 
     if response.status_code == 200:
         lessons = response.json().get('lesson_list', [])
+        for l in lessons:
+            l['date'] = datetime.strptime(l['date'], "%d/%m/%Y %H:%M")
         try:
-            lessons.sort(key=lambda l: datetime.strptime(l['date'], "%d/%m/%Y %H:%M"))
+            lessons.sort(key=lambda l: l['date'])
         except (KeyError, ValueError) as e:
             flash(f"Nie udało się posortować lekcji: {str(e)}", "error")
     role = session.get('role')
     current_time = datetime.now() + timedelta(hours=1)
-    for l in lessons:
-        l['date'] = datetime.fromisoformat(l['date'])
     return render_template('lesson_browser.html', lessons=lessons, user_role=role,current_time = current_time)
 
 
