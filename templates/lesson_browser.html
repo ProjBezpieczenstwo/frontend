@@ -22,7 +22,11 @@
                 <strong>Przedmiot:</strong> {{ lesson.subject }} <br>
                 <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
                 <strong>Data:</strong> {{ lesson.date }} <br>
-                <strong>Status:</strong> {{ lesson.status }} <br>
+                <strong>Status:</strong>
+                <span style="color: {{ 'red' if lesson.status == 'cancelled' else 'black' }}">
+                    {{ lesson.status }}
+                </span>
+                <br>
                 <strong>Cena:</strong> {{ lesson.price }} PLN <br>
                 <strong>Oceniona:</strong> {{ 'Tak' if lesson.is_reviewed else 'Nie' }} <br>
                 <strong>Czy zraportowana:</strong> {{ 'Tak' if lesson.is_reported else 'Nie' }} <br>
