@@ -42,7 +42,7 @@ def submit_report(lesson_id):
         "progress_rating": request.form['progress_rating']
     }
     response = api_post("/api/report", json=payload)
-    if response.status_code != 200:
+    if response.status_code != 201:
         flash(response.json(), "error")
     else:
         flash("Raport z lekcji został przesłany", "success")
