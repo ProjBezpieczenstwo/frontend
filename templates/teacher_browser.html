@@ -36,7 +36,7 @@
             value="{{ request.args.get('name', '') }}">
     </div>
     <div>
-        <button class="btn btn-secondary mt-2" onClick="location.href='{{ url_for('lessons.teacher_browser') }}';">Wyczyść filtry</button>
+        <button class="btn btn-secondary mt-2" type="button" onClick="location.href='{{ url_for('lessons.teacher_browser') }}';">Wyczyść filtry</button>
         <button class="btn btn-primary mt-2" type="submit">Filtruj</button>
     </div>
 </form>
