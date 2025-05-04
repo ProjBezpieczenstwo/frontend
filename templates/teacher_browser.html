@@ -36,7 +36,7 @@
             value="{{ request.args.get('name', '') }}">
     </div>
     <div>
-        <button type="reset">Wyczyść Filtry</button>
+        <a href="{{ url_for('lessons.teacher_browser') }}" class="btn">Wyczyść filtry</a>
         <button type="submit">Filtruj</button>
     </div>
 </form>
