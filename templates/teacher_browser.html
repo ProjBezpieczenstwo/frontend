@@ -11,7 +11,10 @@
         <select name="subject" id="subject">
             <option value="">-- Wszystkie --</option>
             {% for subject in subjects %}
-            <option value="{{ subject.id }}">{{ subject.name }}</option>
+            <option value="{{ subject.id }}"
+                {% if request.args.get('subject') == subject.id|string %}selected{% endif %}>
+                {{ subject.name }}
+            </option>
             {% endfor %}
         </select>
     </div>
@@ -20,13 +23,17 @@
         <select name="difficulty_id" id="difficulty_id">
             <option value="">-- Wszystkie --</option>
             {% for level in difficulty_levels %}
-            <option value="{{ level.id }}">{{ level.name }}</option>
+            <option value="{{ level.id }}"
+                {% if request.args.get('difficulty_id') == level.id|string %}selected{% endif %}>
+                {{ level.name }}
+            </option>
             {% endfor %}
         </select>
     </div>
     <div>
         <label for="name">Nazwa</label>
-        <input type="text" name="name" id="name">
+        <input type="text" name="name" id="name"
+            value="{{ request.args.get('name', '') }}">
     </div>
     <div>
         <button type="submit">Filtruj</button>
