@@ -96,4 +96,8 @@ def delete_user_page(user_id):
 
     return redirect(url_for('admin.users_page'))
 
-
+@admin_bp.template_filter('format_datetime')
+def format_datetime(value, fmt="%d.%m.%Y %H:%M"):
+    if value is None:
+        return ""
+    return value.strftime(fmt)
