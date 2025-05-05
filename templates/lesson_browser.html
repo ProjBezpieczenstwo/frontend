@@ -34,9 +34,28 @@
                 <strong>Cena:</strong> {{ lesson.price }} PLN <br>
 
                 {% if lesson.date > current_time %}
-                <button class="btn btn-info mt-2" onclick="confirmRedirect('{{ url_for('lessons.lesson', lesson_id=lesson.id) }}')">
-                    Cancel lesson
+                <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#cancelModal{{ lesson.id }}">
+                        Cancel lesson
                 </button>
+                <div class="modal fade" id="cancelModal{{ lesson.id }}" tabindex="-1" aria-labelledby="cancelModalLabel{{ lesson.id }}" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <form method="POST" action="{{ url_for('lessons.lesson', lesson_id=lesson.id) }}">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="cancelModalLabel{{ lesson.id }}">Anuluj zajecia</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
+                            <textarea name="cancellation_comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="submit" class="btn btn-success">Cancel lesson</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
                 {% endif %}
             </div>
             {% endfor %}
@@ -102,7 +121,7 @@
                                 </select>
 
                                 <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
-                                <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+                                <textarea name="review_comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
                             </div>
                             <div class="modal-footer">
                               <button type="submit" class="btn btn-success">Zatwierdź</button>
@@ -136,7 +155,7 @@
                                 </select>
 
                                 <label for="comment{{ lesson.id }}" class="mt-3">Komentarz:</label>
-                                <textarea name="comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
+                                <textarea name="report_comment" id="comment{{ lesson.id }}" class="form-control" rows="3" required></textarea>
 
                                 <label for="homework{{ lesson.id }}" class="mt-3">Zadanie domowe:</label>
                                 <textarea name="homework" id="homework{{ lesson.id }}" class="form-control" rows="3"></textarea>
@@ -171,6 +190,7 @@
                 <strong>Poziom trudności:</strong> {{ lesson.difficulty_id }} <br>
                 <strong>Data:</strong> {{ lesson.date }} <br>
                 <strong>Status:</strong> <span style="color: red;">{{ lesson.status }}</span> <br>
+                <strong>Komentarz:</strong> {{ lesson.cancellation_comment }} <br>
                 <strong>Cena:</strong> {{ lesson.price }} PLN <br>
             </div>
             {% endfor %}

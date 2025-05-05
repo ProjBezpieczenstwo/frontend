@@ -48,9 +48,16 @@ def submit_report(lesson_id):
         flash("Raport z lekcji został przesłany", "success")
     return redirect(url_for("lessons.my_lessons"))
 
-@lessons_bp.route('/lesson/<int:lesson_id>', methods=['GET'])
+
+@lessons_bp.route('/lesson/<int:lesson_id>', methods=['POST'])
 def lesson(lesson_id):
-    response = api_put(f"/api/lesson/{lesson_id}")
+    comment = request.form.get("cancellation_comment")
+    print("FORM DATA:", request.form)
+    print(f"Komentarz: {comment}")
+    payload = {
+        "comment": comment
+    }
+    response = api_put(f"/api/lesson/{lesson_id}", json=payload)
     if response.status_code != 200:
         flash("coś sie rozjebało", "error")
     else:
