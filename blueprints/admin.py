@@ -88,10 +88,7 @@ def users_page():
 
 @admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
 def delete_user_page(user_id):
-    payload = {
-        "user_type": request.form.get("user_type")
-    }
-    response = api_delete(f"/admin/users/{user_id}", json=payload)
+    response = api_delete(f"/admin/users/{user_id}?user_type={request.form.get('user_type')}")
 
     if response.status_code == 200:
         flash("User deleted.", "success")
