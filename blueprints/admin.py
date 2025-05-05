@@ -95,3 +95,66 @@ def delete_user_page(user_id):
         flash(response.json().get("message", "Failed to delete user."), "error")
 
     return redirect(url_for('admin.users_page'))
+
+@admin_bp.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
+def edit_user_page(user_id):
+    # POST — zapis zmian
+    if request.method == 'POST':
+        # najpierw pobieramy rolę z ukrytego pola
+        role = request.form.get('role')
+
+        data = {
+            "email": request.form['email'],
+            "name": request.form['name']
+        }
+        # jeżeli podano nowe hasło — dołączamy
+        if pwd := request.form.get('password'):
+            data['password'] = pwd
+
+        if role == 'teacher':
+            # dodatkowe pola dla nauczyciela
+            data['bio'] = request.form.get('bio', '')
+            data['hourly_rate'] = request.form.get('hourly_rate', '')
+            # lista subject_ids i difficulty_level_ids jako inty
+            data['subject_ids'] = [int(i) for i in request.form.getlist('subject_ids')]
+            data['difficulty_level_ids'] = [int(i) for i in request.form.getlist('difficulty_level_ids')]
+
+        # wysyłamy na endpoint /auth/update/<user_id>
+        resp = api_post(f"/auth/update/{user_id}", json=data)
+        if resp.ok:
+            flash("Dane użytkownika zostały zaktualizowane", "success")
+        else:
+            flash(resp.json().get("message", "Nie udało się zaktualizować użytkownika"), "error")
+        return redirect(url_for('admin.users_page'))
+
+    # GET — wyświetlenie formularza
+    resp = api_get(f"/auth/user/{user_id}")
+    if not resp.ok:
+        flash(resp.json().get("message", "Nie udało się pobrać danych użytkownika"), "error")
+        return redirect(url_for('admin.users_page'))
+    user = resp.json()
+
+    # jeżeli to nauczyciel, pobierz też listę przedmiotów i poziomów trudności
+    subjects = []
+    difficulties = []
+    if user.get('role') == 'teacher':
+        sub_resp = api_get("/admin/subjects")
+        if sub_resp.ok:
+            subjects = sub_resp.json().get('subjects', [])
+        diff_resp = api_get("/admin/difficulty_levels")
+        if diff_resp.ok:
+            difficulties = diff_resp.json().get('difficulty_levels', [])
+
+    # wybierz odpowiedni szablon
+    if user.get('role') == 'student':
+        return render_template('admin_edit_student.html', user=user)
+    elif user.get('role') == 'teacher':
+        return render_template(
+            'admin_edit_teacher.html',
+            user=user,
+            subjects=subjects,
+            difficulties=difficulties
+        )
+    else:
+        flash("Tego typu użytkownika nie można edytować tą drogą.", "error")
+        return redirect(url_for('admin.users_page'))

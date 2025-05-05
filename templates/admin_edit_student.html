@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Edytuj studenta{% endblock %}
+{% block content %}
+  <h2>Edytuj studenta</h2>
+
+  <div>
+    <strong>ID:</strong> {{ user.id }}<br>
+    <strong>Utworzony:</strong> {{ user.created_at }}
+  </div>
+  <br>
+
+  <form method="post" action="{{ url_for('admin.edit_user_page', user_id=user.id) }}">
+    <input type="hidden" name="role" value="student">
+
+    <label>
+      Email:<br>
+      <input type="email" name="email" value="{{ user.email }}" required>
+    </label>
+    <br><br>
+
+    <label>
+      Imię i nazwisko:<br>
+      <input type="text" name="name" value="{{ user.name }}" required>
+    </label>
+    <br><br>
+
+    <label>
+      Nowe hasło (opcjonalnie):<br>
+      <input type="password" name="password" placeholder="Pozostaw puste, by nie zmieniać">
+    </label>
+    <br><br>
+
+    <button type="submit" class="btn btn-primary mt-2">Zapisz zmiany</button>
+    <button type="button" class="btn btn-secondary mt-2" onclick="window.location.href='{{ url_for('admin.users_page') }}'">Anuluj</button>
+  </form>
+{% endblock %}
