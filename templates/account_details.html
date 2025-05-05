@@ -38,7 +38,7 @@
       </label>
       <br><br>
 
-      <label>
+      <div class="mb-3">
       Przedmioty:<br>
       {% for subj in subjects %}
         <div class="form-check">
@@ -49,10 +49,10 @@
           <label class="form-check-label" for="subj{{ subj.id }}">{{ subj.name }}</label>
         </div>
       {% endfor %}
-    </label>
+    </div>
     <br>
 
-    <label>
+    <div class="mb-3">
       Poziomy trudności:<br>
       {% for lvl in difficulties %}
         <div class="form-check">
@@ -63,7 +63,7 @@
           <label class="form-check-label" for="lvl{{ lvl.id }}">{{ lvl.name }}</label>
         </div>
       {% endfor %}
-    </label>
+    </div>
       <br><br>
     {% endif %}
 
