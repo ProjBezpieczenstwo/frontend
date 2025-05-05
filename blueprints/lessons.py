@@ -51,7 +51,7 @@ def submit_report(lesson_id):
 
 @lessons_bp.route('/lesson/<int:lesson_id>', methods=['POST'])
 def lesson(lesson_id):
-    comment = request.form.get("comment")
+    comment = request.form.get("cancellation_comment")
     print("FORM DATA:", request.form)
     print(f"Komentarz: {comment}")
     payload = {
