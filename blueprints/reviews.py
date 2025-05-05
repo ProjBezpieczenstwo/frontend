@@ -8,7 +8,7 @@ reviews_bp = Blueprint('reviews', __name__, template_folder='../templates')
 def reviews(teacher_id):
     if request.method == 'POST':
         rating = request.form.get('rating')
-        comment = request.form.get('comment')
+        comment = request.form.get('review_comment')
 
         payload = {
             "rating": int(rating),

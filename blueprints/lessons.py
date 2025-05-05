@@ -37,7 +37,7 @@ def my_lessons():
 def submit_report(lesson_id):
     payload = {
         "lesson_id": lesson_id,
-        "comment": request.form['comment'],
+        "comment": request.form['report_comment'],
         "homework": request.form['homework'],
         "progress_rating": request.form['progress_rating']
     }
@@ -69,7 +69,7 @@ def submit_review(lesson_id):
     payload = {
         "lesson_id": lesson_id,
         "rating": request.form.get('rating'),
-        "comment": request.form.get('comment')
+        "comment": request.form.get('review_comment')
     }
     response = api_post("/api/add_review", json=payload)
     if response.status_code != 200:
