@@ -152,10 +152,10 @@ def account_details_page():
     if user.get('role') == 'teacher':
         s = api_get("/subjects")
         if s.ok:
-            subjects = s.json().get('subjects', [])
+            subjects = s.json()
         d = api_get("/difficulty-levels")
         if d.ok:
-            difficulties = d.json().get('difficulty_levels', [])
+            difficulties = d.json()
 
     return render_template(
         'account_details.html',
