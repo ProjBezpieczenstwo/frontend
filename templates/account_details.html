@@ -45,7 +45,7 @@
           <input class="form-check-input" type="checkbox"
                  name="subject_ids" value="{{ subj.id }}"
                  id="subj{{ subj.id }}"
-                 {% if subj.id in user.subject_ids %}checked{% endif %}>
+                 {% if subj.name in user.subjects %}checked{% endif %}>
           <label class="form-check-label" for="subj{{ subj.id }}">{{ subj.name }}</label>
         </div>
       {% endfor %}
@@ -59,7 +59,7 @@
           <input class="form-check-input" type="checkbox"
                  name="difficulty_level_ids" value="{{ lvl.id }}"
                  id="lvl{{ lvl.id }}"
-                 {% if lvl.id in user.difficulty_level_ids %}checked{% endif %}>
+                 {% if lvl.name in user.difficulty_levels %}checked{% endif %}>
           <label class="form-check-label" for="lvl{{ lvl.id }}">{{ lvl.name }}</label>
         </div>
       {% endfor %}
