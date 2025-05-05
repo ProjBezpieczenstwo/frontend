@@ -16,9 +16,11 @@
             {% if session.get('role') == 'student' %}
                 <a href="{{ url_for('lessons.my_lessons') }}">My Lessons</a>
                 <a href="{{ url_for('lessons.teacher_browser') }}">Book Lessons</a>
+                <a href="{{ url_for('auth.account_details_page') }}">Account Details</a>
             {% elif session.get('role') == 'teacher' %}
                 <a href="{{ url_for('lessons.my_lessons') }}">My Lessons</a>
                 <a href="{{ url_for('lessons.calendar') }}">Available Hours</a>
+                <a href="{{ url_for('auth.account_details_page') }}">Account Details</a>
             {% else %}
                 <a href="{{ url_for('admin.access_codes_page') }}">Access Codes</a>
                 <a href="{{ url_for('admin.users_page') }}">Users</a>
