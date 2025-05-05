@@ -156,8 +156,6 @@ def account_details_page():
         d = api_get("/api/difficulty-levels")
         if d.ok:
             difficulties = d.json().get("difficulty_levels", [])
-        flash(subjects, "success")
-        flash(difficulties, "success")
 
     return render_template(
         'account_details.html',
