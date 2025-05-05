@@ -51,7 +51,7 @@ def submit_report(lesson_id):
 @lessons_bp.route('/lesson/<int:lesson_id>', methods=['GET'])
 def lesson(lesson_id):
     payload = {
-        "comment" : request.form.get('comment')
+        "comment": request.args.get("comment")
     }
     response = api_put(f"/api/lesson/{lesson_id}", json=payload)
     if response.status_code != 200:
