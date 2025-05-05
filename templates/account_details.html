@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Moje konto{% endblock %}
+{% block content %}
+  <h2>Moje konto</h2>
+
+  <form method="post" action="{{ url_for('auth.account_details_page') }}">
+    {# dla POST wiemy, jaką rolę ma user #}
+    <input type="hidden" name="role" value="{{ user.role }}">
+
+    <label>
+      Email:<br>
+      <input type="email" name="email" value="{{ user.email }}" required>
+    </label>
+    <br><br>
+
+    <label>
+      Imię i nazwisko:<br>
+      <input type="text" name="name" value="{{ user.name }}" required>
+    </label>
+    <br><br>
+
+    <label>
+      Nowe hasło (opcjonalnie):<br>
+      <input type="password" name="password" placeholder="Pozostaw puste, by nie zmieniać">
+    </label>
+    <br><br>
+
+    {% if user.role == 'teacher' %}
+      <label>
+        Bio:<br>
+        <textarea name="bio" rows="4">{{ user.bio or '' }}</textarea>
+      </label>
+      <br><br>
+
+      <label>
+        Stawka godzinowa:<br>
+        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate or '' }}">
+      </label>
+      <br><br>
+
+      <label>
+        Przedmioty (Ctrl+klik by zaznaczyć wiele):<br>
+        <select name="subject_ids" multiple size="5">
+          {% for subj in subjects %}
+            <option value="{{ subj.id }}"
+              {% if subj.id in user.subject_ids %}selected{% endif %}>
+              {{ subj.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <br><br>
+
+      <label>
+        Poziomy trudności (Ctrl+klik by zaznaczyć wiele):<br>
+        <select name="difficulty_level_ids" multiple size="5">
+          {% for lvl in difficulties %}
+            <option value="{{ lvl.id }}"
+              {% if lvl.id in user.difficulty_level_ids %}selected{% endif %}>
+              {{ lvl.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <br><br>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary mt-2">Zapisz zmiany</button>
+    <button
+      type="button"
+      class="btn btn-secondary mt-2"
+      onclick="window.location.href='{{ url_for('index') }}'">
+      Anuluj
+    </button>
+  </form>
+{% endblock %}

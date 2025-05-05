@@ -108,3 +108,59 @@ def logout():
     session.clear()
     flash("Logged out successfully.", "success")
     return redirect(url_for('index'))
+
+@auth_bp.route('/account_details', methods=['GET', 'POST'])
+def account_details_page():
+    # POST: zapisujemy zmiany
+    if request.method == 'POST':
+        data = {
+            "email": request.form['email'].strip().lower(),
+            "name": request.form['name'].strip()
+        }
+        if pwd := request.form.get('password'):
+            data['password'] = pwd
+
+        # dla teacher dokładamy dodatkowe pola
+        # (backend rozpoznaje z tokena, że to ten user)
+        if request.form.get('role') == 'teacher':
+            data['bio'] = request.form.get('bio', '').strip()
+            data['hourly_rate'] = request.form.get('hourly_rate', '').strip()
+            data['subject_ids'] = [int(i) for i in request.form.getlist('subject_ids')]
+            data['difficulty_level_ids'] = [int(i) for i in request.form.getlist('difficulty_level_ids')]
+
+        resp = api_post("/auth/update", json=data)
+        if resp.ok:
+            flash("Dane zapisane pomyślnie", "success")
+        else:
+            # próbujemy odczytać błąd z JSON lub z text
+            try:
+                err = resp.json().get("error", resp.json().get("message", ""))
+            except ValueError:
+                err = resp.text or f"Status {resp.status_code}"
+            flash(f"Błąd: {err}", "error")
+        return redirect(url_for('auth.account_details_page'))
+
+    # GET: pobieramy bieżące dane
+    resp = api_get("/auth/user")
+    if not resp.ok:
+        flash("Nie udało się pobrać danych konta", "error")
+        return redirect(url_for('index'))
+
+    user = resp.json().get('user', {})
+    # dla teacher ładujemy selecty
+    subjects = []
+    difficulties = []
+    if user.get('role') == 'teacher':
+        s = api_get("/subjects")
+        if s.ok:
+            subjects = s.json().get('subjects', [])
+        d = api_get("/difficulty-levels")
+        if d.ok:
+            difficulties = d.json().get('difficulty_levels', [])
+
+    return render_template(
+        'account_details.html',
+        user=user,
+        subjects=subjects,
+        difficulties=difficulties
+    )
