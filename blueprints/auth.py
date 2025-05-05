@@ -150,12 +150,12 @@ def account_details_page():
     subjects = []
     difficulties = []
     if user.get('role') == 'teacher':
-        s = api_get("/subjects")
+        s = api_get("/api/subjects")
         if s.ok:
-            subjects = s.json()
-        d = api_get("/difficulty-levels")
+            subjects = s.json().get("subjects", [])
+        d = api_get("/api/difficulty-levels")
         if d.ok:
-            difficulties = d.json()
+            difficulties = d.json().get("difficulty_levels", [])
         flash(subjects, "success")
         flash(difficulties, "success")
 

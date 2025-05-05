@@ -28,13 +28,13 @@
     {% if user.role == 'teacher' %}
       <label>
         Bio:<br>
-        <textarea name="bio" rows="4">{{ user.bio}}</textarea>
+        <textarea name="bio" rows="4">{{ user.bio or '' }}</textarea>
       </label>
       <br><br>
 
       <label>
         Stawka godzinowa:<br>
-        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate}}">
+        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate }}">
       </label>
       <br><br>
 
