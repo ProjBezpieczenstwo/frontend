@@ -133,9 +133,6 @@ def edit_user_page(user_id):
         flash(resp.json().get("message", "Nie udało się pobrać danych użytkownika"), "error")
         return redirect(url_for('admin.users_page'))
     user = resp.json()
-    flash(user.get("name"), "success")
-    flash(user, "success")
-    flash(user.get("role"), "success")
     # jeżeli to nauczyciel, pobierz też listę przedmiotów i poziomów trudności
     subjects = []
     difficulties = []
