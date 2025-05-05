@@ -145,8 +145,7 @@ def account_details_page():
     if not resp.ok:
         flash("Nie udało się pobrać danych konta", "error")
         return redirect(url_for('index'))
-
-    user = resp.json().get('user', {})
+    user = resp.json()
     # dla teacher ładujemy selecty
     subjects = []
     difficulties = []
