@@ -134,6 +134,7 @@ def edit_user_page(user_id):
         return redirect(url_for('admin.users_page'))
     user = resp.json()
     flash(user.get("name"), "success")
+    flash(user, "success")
     flash(user.get("role"), "success")
     # jeżeli to nauczyciel, pobierz też listę przedmiotów i poziomów trudności
     subjects = []
