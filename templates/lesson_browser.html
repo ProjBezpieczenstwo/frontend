@@ -40,7 +40,7 @@
                 <div class="modal fade" id="cancelModal{{ lesson.id }}" tabindex="-1" aria-labelledby="cancelModalLabel{{ lesson.id }}" aria-hidden="true">
                   <div class="modal-dialog">
                     <div class="modal-content">
-                      <form method="GET" action="{{ url_for('lessons.lesson', lesson_id=lesson.id) }}">
+                      <form method="POST" action="{{ url_for('lessons.lesson', lesson_id=lesson.id) }}">
                         <div class="modal-header">
                           <h5 class="modal-title" id="cancelModalLabel{{ lesson.id }}">Anuluj zajecia</h5>
                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
