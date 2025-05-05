@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+
 from blueprints.helper import api_get, api_post, api_delete
 
 admin_bp = Blueprint('admin', __name__, template_folder='../templates')
@@ -87,7 +88,7 @@ def users_page():
 
 @admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
 def delete_user_page(user_id):
-    response = api_delete(f"/admin/users/{user_id}")
+    response = api_delete(f"/admin/users/{user_id}?user_type={request.form.get('user_type')}")
 
     if response.status_code == 200:
         flash("User deleted.", "success")
@@ -95,6 +96,7 @@ def delete_user_page(user_id):
         flash(response.json().get("message", "Failed to delete user."), "error")
 
     return redirect(url_for('admin.users_page'))
+
 
 @admin_bp.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
 def edit_user_page(user_id):
