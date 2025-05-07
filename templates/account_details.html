@@ -18,7 +18,7 @@
       <input type="text" name="name" value="{{ user.name }}" required>
     </label>
     <br><br>
-
+    <>
     <label>
       Nowe hasło (opcjonalnie):<br>
       <input type="password" name="password" placeholder="Pozostaw puste, by nie zmieniać">
@@ -34,7 +34,7 @@
 
       <label>
         Stawka godzinowa:<br>
-        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate }}">
+        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate }}" required>
       </label>
       <br><br>
 
@@ -66,6 +66,12 @@
     </div>
       <br><br>
     {% endif %}
+
+    <label>
+      Podaj Stare Hasło:<br>
+      <input type="password" name="current_password" required>
+    </label>
+    <br><br>
 
     <button type="submit" class="btn btn-primary mt-2">Zapisz zmiany</button>
     <button
