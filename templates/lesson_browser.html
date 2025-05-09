@@ -191,6 +191,7 @@
                 <strong>Data:</strong> {{ lesson.date }} <br>
                 <strong>Status:</strong> <span style="color: red;">{{ lesson.status }}</span> <br>
                 <strong>Komentarz:</strong> {{ lesson.cancellation_comment }} <br>
+                <strong>Anulowane przez:</strong> {{ lesson.cancelled_by }} <br>
                 <strong>Cena:</strong> {{ lesson.price }} PLN <br>
             </div>
             {% endfor %}

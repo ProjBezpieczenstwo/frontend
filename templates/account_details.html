@@ -18,7 +18,7 @@
       <input type="text" name="name" value="{{ user.name }}" required>
     </label>
     <br><br>
-
+    <>
     <label>
       Nowe hasło (opcjonalnie):<br>
       <input type="password" name="password" placeholder="Pozostaw puste, by nie zmieniać">
@@ -34,7 +34,7 @@
 
       <label>
         Stawka godzinowa:<br>
-        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate }}">
+        <input type="number" name="hourly_rate" step="1" value="{{ user.hourly_rate }}" required>
       </label>
       <br><br>
 
@@ -45,7 +45,7 @@
           <input class="form-check-input" type="checkbox"
                  name="subject_ids" value="{{ subj.id }}"
                  id="subj{{ subj.id }}"
-                 {% if subj.id in user.subject_ids %}checked{% endif %}>
+                 {% if subj.name in user.subjects %}checked{% endif %}>
           <label class="form-check-label" for="subj{{ subj.id }}">{{ subj.name }}</label>
         </div>
       {% endfor %}
@@ -59,13 +59,19 @@
           <input class="form-check-input" type="checkbox"
                  name="difficulty_level_ids" value="{{ lvl.id }}"
                  id="lvl{{ lvl.id }}"
-                 {% if lvl.id in user.difficulty_level_ids %}checked{% endif %}>
+                 {% if lvl.name in user.difficulty_levels %}checked{% endif %}>
           <label class="form-check-label" for="lvl{{ lvl.id }}">{{ lvl.name }}</label>
         </div>
       {% endfor %}
     </div>
       <br><br>
     {% endif %}
+
+    <label>
+      Podaj Stare Hasło:<br>
+      <input type="password" name="current_password" required>
+    </label>
+    <br><br>
 
     <button type="submit" class="btn btn-primary mt-2">Zapisz zmiany</button>
     <button
