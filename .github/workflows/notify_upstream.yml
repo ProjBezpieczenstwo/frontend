@@ -1,0 +1,18 @@
+name: Notify upstream on push
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send dispatch event to upstream
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.CR_PAT }}
+          repository: ProjBezpieczenstwo/projekt
+          event-type: fork-update
+          client-payload: '{"fork":"${{ github.repository_owner }}","repo":"${{ github.event.repository.name }}"}'
