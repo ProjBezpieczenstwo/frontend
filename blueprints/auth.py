@@ -120,6 +120,9 @@ def account_details_page():
         if pwd := request.form.get('password'):
             data['password'] = pwd
 
+        # weź obecne hasło
+        data['current_password'] = request.form.get('current_password')
+
         # dla teacher dokładamy dodatkowe pola
         # (backend rozpoznaje z tokena, że to ten user)
         if request.form.get('role') == 'teacher':

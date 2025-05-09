@@ -121,8 +121,6 @@ def edit_user_page(user_id):
             data['subject_ids'] = [int(i) for i in request.form.getlist('subject_ids')]
             data['difficulty_level_ids'] = [int(i) for i in request.form.getlist('difficulty_level_ids')]
 
-        # weź obecne hasło
-        data['current_password'] = request.form.get('current_password')
         # wysyłamy na endpoint /auth/update/<user_id>
         resp = api_post(f"/auth/update/{user_id}", json=data)
         if resp.ok:
