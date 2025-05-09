@@ -144,7 +144,7 @@ def edit_user_page(user_id):
         sub_resp = api_get("/api/subjects")
         if sub_resp.ok:
             subjects = sub_resp.json().get('subjects', [])
-        diff_resp = api_get("/api/difficulty_levels")
+        diff_resp = api_get("/api/difficulty-levels")
         if diff_resp.ok:
             difficulties = diff_resp.json().get('difficulty_levels', [])
 
