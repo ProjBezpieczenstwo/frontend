@@ -30,5 +30,7 @@ Autorzy: Jakub Kucharek, Igor Osiakowski, Mateusz Ługowski, Mikołaj Lewandowsk
 
 ### 5. **Dostęp**  
    - https://\<twoja-app-frontend\>.azurewebsites.net (szablon)
-   - (```https://korepetycje-frontend.azurewebsites.net```) (przypadek wdrożenia)
+   - (```https://korepetycje-frontend.<region>.azurewebsites.net```) (przypadek wdrożenia, region to np: polandcentral-01)
+   - https://\<twoja-app-frontend>.azurewebsites.net/admin/register (rejestracja jako admin)
+   - https://\<twoja-app-frontend>.azurewebsites.net/auth/test/register (omijanie SMTP)
 
