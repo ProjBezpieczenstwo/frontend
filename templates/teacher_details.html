@@ -70,47 +70,58 @@
         }
     ],
     onChange: function(selectedDates, dateStr, instance) {
-        const chosenDate = new Date(dateStr);
-        const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
+    const chosenDate = new Date(dateStr);
+    const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
 
-        // Filtrowanie dostępnych godzin w wybrany dzień
-        const availableHours = calendarSlots
-            .filter(s => s.weekday === chosenWeekday)
-            .map(s => s.available_hours)  // Lista dostępnych godzin w wybranym dniu
-            .flat(); // Spłaszczamy, bo dostępne godziny mogą być w zagnieżdżonej tablicy
+    const availableHours = calendarSlots
+        .filter(s => s.weekday === chosenWeekday)
+        .map(s => s.available_hours)
+        .flat();
 
-        // Usuwamy zajęte godziny z lekcji
-        const busyHours = busySlots
-            .filter(s => s.startsWith(dateStr)) // Sprawdzamy, czy lekcja dotyczy wybranego dnia
-            .map(s => s.split(' ')[1]); // Pobieramy godziny lekcji
+    const busyHours = busySlots
+        .filter(s => s.startsWith(dateStr))
+        .map(s => s.split(' ')[1]);
 
-        const freeHours = availableHours.filter(h => !busyHours.includes(h)); // Dostępne godziny
+    const now = new Date();
+    let freeHours = availableHours.filter(h => !busyHours.includes(h));
 
-        // Łączymy dostępne godziny i zajęte godziny w jedną tablicę
-        const allHours = [...freeHours, ...busyHours];  // Wszystkie godziny w kolejności: wolne + zajęte
+    // Jeśli wybrana data to dziś, filtruj godziny wcześniejsze niż teraz
+    if (chosenDate.toDateString() === now.toDateString()) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
 
-        // Sortowanie godzin w porządku rosnącym
-        allHours.sort((a, b) => {
-            const [aHour, aMinute] = a.split(':').map(Number);
-            const [bHour, bMinute] = b.split(':').map(Number);
-            return aHour - bHour || aMinute - bMinute;
+        freeHours = freeHours.filter(h => {
+            const [hHour, hMinute] = h.split(':').map(Number);
+            return hHour > currentHour || (hHour === currentHour && hMinute > currentMinute);
         });
+    }
 
-        const hourSelect = document.getElementById('hour');
-        hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
+    const allHours = [...freeHours, ...busyHours];
+    allHours.sort((a, b) => {
+        const [aHour, aMinute] = a.split(':').map(Number);
+        const [bHour, bMinute] = b.split(':').map(Number);
+        return aHour - bHour || aMinute - bMinute;
+    });
 
-        allHours.forEach(h => {
-            const option = document.createElement('option');
-            option.value = h;
-            option.textContent = h;
+    const hourSelect = document.getElementById('hour');
+    hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
 
-            if (busyHours.includes(h)) {
-                option.disabled = true;  // Ustawiamy godzinę jako niedostępną
-                option.style.color = 'red';  // Zmieniamy kolor na czerwony
-            }
+    allHours.forEach(h => {
+        const option = document.createElement('option');
+        option.value = h;
+        option.textContent = h;
 
-            hourSelect.appendChild(option);
-        });
+        if (busyHours.includes(h) || (chosenDate.toDateString() === now.toDateString() &&
+            (() => {
+                const [hHour, hMinute] = h.split(':').map(Number);
+                return hHour < now.getHours() || (hHour === now.getHours() && hMinute <= now.getMinutes());
+            })())) {
+            option.disabled = true;
+            option.style.color = 'red';
+        }
+
+        hourSelect.appendChild(option);
+    });
     }
 });
 
