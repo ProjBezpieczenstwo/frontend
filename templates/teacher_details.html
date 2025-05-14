@@ -9,7 +9,6 @@
 <p><strong>Średnia ocen:</strong> {{ teacher.avg }}/5.00</p>
 <p><strong>O nauczycielu:</strong> {{ teacher.bio }}</p>
 
-
 <h2>Wybierz zajecia</h2>
 <form method="POST" action="{{ url_for('lessons.book_lesson', teacher_id=teacher.id) }}">
     <div>
@@ -45,87 +44,100 @@
 </form>
 
 <script>
-    // Pobieranie danych z szablonu
     const calendarSlots = {{ calendar | tojson }};
     const lessons = {{ lessons | tojson }};
-    const busySlots = lessons;  // lessons to po prostu lista stringów "YYYY-MM-DD HH:MM"
-  // Zajęte godziny
+    const busySlots = lessons;
 
-    // Konwertujemy dni tygodnia na liczby JS (0 = niedziela, ..., 6 = sobota)
     const weekdayMap = {
         'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
         'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 0
     };
 
-    // Zbieramy dostępne dni tygodnia
-    const activeWeekdays = [...new Set(calendarSlots.map(s => weekdayMap[s.weekday]))];
-
-    // Flatpickr z ograniczeniem do dostępnych dni tygodnia
     flatpickr("#date", {
-    dateFormat: "Y-m-d",
-    minDate: "today",
-    enable: [
-        function(date) {
-            return activeWeekdays.includes(date.getDay());
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        enable: [
+            function(date) {
+                const weekdayReverseMap = {
+                    0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
+                    4: 'Thursday', 5: 'Friday', 6: 'Saturday'
+                };
+                const dayName = weekdayReverseMap[date.getDay()];
+
+                const slots = calendarSlots.filter(s => s.weekday === dayName);
+                if (slots.length === 0) return false;
+
+                const dateStr = date.toISOString().split('T')[0];
+
+                const busyHours = busySlots
+                    .filter(s => s.startsWith(dateStr))
+                    .map(s => s.split(' ')[1]);
+
+                let availableHours = slots.map(s => s.available_hours).flat();
+
+                const now = new Date();
+                if (date.toDateString() === now.toDateString()) {
+                    availableHours = availableHours.filter(h => {
+                        const [hHour, hMinute] = h.split(':').map(Number);
+                        return hHour > now.getHours() || (hHour === now.getHours() && hMinute > now.getMinutes());
+                    });
+                }
+
+                const freeHours = availableHours.filter(h => !busyHours.includes(h));
+                return freeHours.length > 0;
+            }
+        ],
+        onChange: function(selectedDates, dateStr, instance) {
+            const chosenDate = new Date(dateStr);
+            const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+            const availableHours = calendarSlots
+                .filter(s => s.weekday === chosenWeekday)
+                .map(s => s.available_hours)
+                .flat();
+
+            const busyHours = busySlots
+                .filter(s => s.startsWith(dateStr))
+                .map(s => s.split(' ')[1]);
+
+            const now = new Date();
+            let freeHours = availableHours.filter(h => !busyHours.includes(h));
+
+            if (chosenDate.toDateString() === now.toDateString()) {
+                freeHours = freeHours.filter(h => {
+                    const [hHour, hMinute] = h.split(':').map(Number);
+                    return hHour > now.getHours() || (hHour === now.getHours() && hMinute > now.getMinutes());
+                });
+            }
+
+            const allHours = [...freeHours, ...busyHours];
+            allHours.sort((a, b) => {
+                const [aHour, aMinute] = a.split(':').map(Number);
+                const [bHour, bMinute] = b.split(':').map(Number);
+                return aHour - bHour || aMinute - bMinute;
+            });
+
+            const hourSelect = document.getElementById('hour');
+            hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
+
+            allHours.forEach(h => {
+                const option = document.createElement('option');
+                option.value = h;
+                option.textContent = h;
+
+                if (busyHours.includes(h) || (chosenDate.toDateString() === now.toDateString() &&
+                    (() => {
+                        const [hHour, hMinute] = h.split(':').map(Number);
+                        return hHour < now.getHours() || (hHour === now.getHours() && hMinute <= now.getMinutes());
+                    })())) {
+                    option.disabled = true;
+                    option.style.color = 'red';
+                }
+
+                hourSelect.appendChild(option);
+            });
         }
-    ],
-    onChange: function(selectedDates, dateStr, instance) {
-    const chosenDate = new Date(dateStr);
-    const chosenWeekday = chosenDate.toLocaleDateString('en-US', { weekday: 'long' });
-
-    const availableHours = calendarSlots
-        .filter(s => s.weekday === chosenWeekday)
-        .map(s => s.available_hours)
-        .flat();
-
-    const busyHours = busySlots
-        .filter(s => s.startsWith(dateStr))
-        .map(s => s.split(' ')[1]);
-
-    const now = new Date();
-    let freeHours = availableHours.filter(h => !busyHours.includes(h));
-
-    // Jeśli wybrana data to dziś, filtruj godziny wcześniejsze niż teraz
-    if (chosenDate.toDateString() === now.toDateString()) {
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-
-        freeHours = freeHours.filter(h => {
-            const [hHour, hMinute] = h.split(':').map(Number);
-            return hHour > currentHour || (hHour === currentHour && hMinute > currentMinute);
-        });
-    }
-
-    const allHours = [...freeHours, ...busyHours];
-    allHours.sort((a, b) => {
-        const [aHour, aMinute] = a.split(':').map(Number);
-        const [bHour, bMinute] = b.split(':').map(Number);
-        return aHour - bHour || aMinute - bMinute;
     });
-
-    const hourSelect = document.getElementById('hour');
-    hourSelect.innerHTML = '<option value="">-- wybierz godzinę --</option>';
-
-    allHours.forEach(h => {
-        const option = document.createElement('option');
-        option.value = h;
-        option.textContent = h;
-
-        if (busyHours.includes(h) || (chosenDate.toDateString() === now.toDateString() &&
-            (() => {
-                const [hHour, hMinute] = h.split(':').map(Number);
-                return hHour < now.getHours() || (hHour === now.getHours() && hMinute <= now.getMinutes());
-            })())) {
-            option.disabled = true;
-            option.style.color = 'red';
-        }
-
-        hourSelect.appendChild(option);
-    });
-    }
-});
-
-
 </script>
 
 <hr>
